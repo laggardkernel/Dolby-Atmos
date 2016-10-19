@@ -1,3 +1,5 @@
+v6 style module, where module could use /magisk/$MODID and /cache/magisk/$MODID at the same time.
+
 # How to Create A New Repo
 1. Fork this repo
 2. Edit "config.sh", and follow the instructions in the script file to create your own Magisk Module. Note that you might want to use Notepad++ on Windows, since the script files are using Unix endline.

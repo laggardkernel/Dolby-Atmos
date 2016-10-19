@@ -7,7 +7,7 @@
 ui_print() {
   if ($BOOTMODE); then
     echo "$1"
-  else 
+  else
     echo -n -e "ui_print $1\n" >> /proc/self/fd/$OUTFD
     echo -n -e "ui_print\n" >> /proc/self/fd/$OUTFD
   fi
@@ -169,12 +169,14 @@ fi
 source config.sh
 
 if ($CACHEMOD); then
-  MOUNTPATH=$CACHEPATH
+#  MOUNTPATH=$CACHEPATH
+  CACHEMODPATH=$CACHEPATH/$MODID
 fi
 
 INSTALLER=$TMPDIR/$MODID
 MODPATH=$MOUNTPATH/$MODID
 
+rm -rf $INSTALLER
 mkdir -p $INSTALLER
 cd $INSTALLER
 unzip -o "$ZIP" common/* module.prop
@@ -217,7 +219,7 @@ if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; IS64BIT=true; fi;
 # You can get the Android API version from $API, the CPU architecture from $ARCH
 # Useful if you are creating Android version / platform dependent mods
 
-if (! $CACHEMOD); then
+#if (! $CACHEMOD); then
   IMG=
   if (is_mounted /data); then
     IMG=/data/$IMGNAME
@@ -230,7 +232,7 @@ if (! $CACHEMOD); then
     IMG=/cache/magisk.img
     ui_print " "
     ui_print "***********************************"
-    ui_print "*      !! Data unavailible !!     *"
+    ui_print "*      !! Data unavailable !!     *"
     ui_print "* Magisk detection is impossible  *"
     ui_print "* Installation will still proceed *"
     ui_print "*  But please make sure you have  *"
@@ -260,11 +262,16 @@ if (! $CACHEMOD); then
     ui_print "! $IMG mount failed... abort"
     exit 1
   fi
-fi
+#fi
 
 # Create mod paths
 rm -rf $MODPATH
 mkdir -p $MODPATH
+
+rm -rf $CACHEMODPATH
+if ($CACHEMOD); then
+  mkdir -p $CACHEMODPATH
+fi
 
 # Copy files
 ui_print "- Copying files"
@@ -282,24 +289,34 @@ fi
 
 # Module info
 cp -af $INSTALLER/module.prop $MODPATH/module.prop
+if ($CACHEMOD); then
+  cp -af $INSTALLER/module.prop $CACHEMODPATH/module.prop
+fi
 if ($BOOTMODE); then
   # Update info for Magisk Manager
-  mktouch /magisk/$MODID/update
-  cp -af $INSTALLER/module.prop /magisk/$MODID/module.prop
+  if ($CACHEMOD); then
+    mktouch /magisk/$MODID/update
+    cp -af $INSTALLER/module.prop $CACHEMODPATH/module.prop
+  else
+    mktouch /magisk/$MODID/update
+    cp -af $INSTALLER/module.prop /magisk/$MODID/module.prop
+  fi
 fi
 
 # post-fs mode scripts
 if ($CACHEMOD) && ($POSTFS); then
-  cp -af $INSTALLER/common/post-fs.sh $MODPATH/post-fs.sh
+  cp -af $INSTALLER/common/post-fs.sh $CACHEMODPATH/post-fs.sh
 fi
 
 # post-fs-data mode scripts
-if (! $CACHEMOD) && ($POSTFSDATA); then
+#if (! $CACHEMOD) && ($POSTFSDATA); then
+if ($POSTFSDATA); then
   cp -af $INSTALLER/common/post-fs-data.sh $MODPATH/post-fs-data.sh
 fi
 
 # service mode scripts
-if (! $CACHEMOD) && ($LATESTARTSERVICE); then
+#if (! $CACHEMOD) && ($LATESTARTSERVICE); then
+if ($LATESTARTSERVICE); then
   cp -af $INSTALLER/common/service.sh $MODPATH/service.sh
 fi
 
@@ -308,7 +325,7 @@ set_permissions
 
 ui_print "- Unmounting partitions"
 
-if (! $CACHEMOD); then
+#if (! $CACHEMOD); then
   umount $MOUNTPATH
   losetup -d $LOOPDEVICE
   rm -rf $MOUNTPATH
@@ -319,12 +336,14 @@ if (! $CACHEMOD); then
     ui_print "- Shrinking $IMG to ${NEWDATASIZE}M...";
     resize2fs $IMG ${NEWDATASIZE}M;
   fi
-fi
+#fi
 
 if (! $BOOTMODE); then
   umount /system
   umount /vendor 2>/dev/null
 fi
+
+rm -rf $INSTALLER
 
 ui_print "- Done"
 exit 0
