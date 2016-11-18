@@ -1,6 +1,13 @@
-v1
-    - New feature 1
-    - New feature 2
-    - Fix 1
-    - Fix 2
-    - Goodies
+r1.0
+    - Rebuilt from newest 1.8 firmware release
+    - Audio post-processing (hifi/dts/dirac) integrated into apks (was omitted from previous builds)
+    - Permissions no longer need to be manually turned on with MM+
+    - Bug fixes
+r0.2
+    - Fixed install script
+r0.1
+    - Initial public BETA
+    - Changed both app's namespace
+    - Changed audio effect UUIDs
+    - Merged framework files
+    - Backported for support from Jellybean to Android N

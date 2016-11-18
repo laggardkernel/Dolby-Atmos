@@ -31,25 +31,35 @@
 
 # NOTE: This part has to be adjusted to fit your own needs
 
-# Is this a cache mod?
-CACHEMOD=false
-
 # This will be the folder name under /magisk or /cache/magisk
 # This should also be the same as the id in your module.prop to prevent confusion
-MODID=template
+MODID=dax
 
 # Set to true if you need automount
 # Most mods would like it to be enabled
 AUTOMOUNT=true
 
-# Set to true if you need post-fs script (Only available in cache mods)
-POSTFS=false
+# Set to true if you need post-fs-data script
+POSTFSDATA=true
 
-# Set to true if you need post-fs-data script (Only available in non-cache mods)
-POSTFSDATA=false
+# Set to true if you need late_start service script
+LATESTARTSERVICE=true
 
-# Set to true if you need late_start service script (Only available in non-cache mods)
-LATESTARTSERVICE=false
+# Custom variables
+REV="1.0.0"
+#APP1="Ax"
+#APP2="AxUI"
+#TMPDIR="dax"
+#SYSTEM="system"
+#SYSTEMLESS="systemless"
+
+# FILE LOCATIONS
+CONFIG_FILE=/system/etc/audio_effects.conf
+HTC_CONFIG_FILE=/system/etc/htc_audio_effects.conf
+VENDOR_CONFIG=/system/vendor/etc/audio_effects.conf
+OTHER_VENDOR_FILE=/system/etc/audio_effects_vendor.conf
+OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
+#HTC_VENDOR=/vendor/etc/audio_effects.conf
 
 ##########################################################################################
 # Installation Message
@@ -59,7 +69,12 @@ LATESTARTSERVICE=false
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "     Magisk Module Template    "
+  ui_print "  LeEco LeMax 2 Atmos (Magisk) "
+  ui_print "     selinux enforcing fix     "
+  ui_print "        Universal - Mod        "
+  ui_print "        Revision $REV          "
+  ui_print "          by ahrion            "
+  ui_print "  Magisk Mod by laggardkernel  "
   ui_print "*******************************"
 }
 
@@ -79,7 +94,7 @@ REPLACE="
 /system/framework
 "
 
-# Construct your own list
+# Construct your own list here
 REPLACE="
 "
 

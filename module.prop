@@ -1,9 +1,9 @@
-id=template
-name=Template Module
-version=v1
+id=dax
+name=LeEco LeMax 2 Atmos
+version=v2.3.a.12_r0
 versionCode=1
-author=topjohnwu
-description=A short description
-support=http://forum.xda-developers.com/showthread.php?t=3432382
+author=ahrion
+description=LeEco LeMax 2 Atmos ported by ahrion, adapted as Magisk module by laggardkernel
+support=http://forum.xda-developers.com/android/software/soundmod-axon-7-dolby-atmos-t3412342
 donate=http://topjohnwu.github.io/donate
 cacheModule=false
