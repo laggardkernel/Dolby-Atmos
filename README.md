@@ -1,1 +1,1 @@
-# LeEco LeMax 2 Atmos
+# ZTE Axon 7 Atmos

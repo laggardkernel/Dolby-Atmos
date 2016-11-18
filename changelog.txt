@@ -1,13 +1,20 @@
-r1.0
-    - Rebuilt from newest 1.8 firmware release
-    - Audio post-processing (hifi/dts/dirac) integrated into apks (was omitted from previous builds)
-    - Permissions no longer need to be manually turned on with MM+
-    - Bug fixes
-r0.2
-    - Fixed install script
-r0.1
+r0.9.1
+    - Fixed issue where plugging in headphones would cause all effects to turn off 
+    - and require manually turning by on (thanks to @yoinx)
+r0.8.1
+    - Fixed "SU.IMG" error during install for users without systemless root
+r0.8
+    - Overhauled install script
+    - Fixed issues where users had to manually place files
+r0.7
+    - Script changes
+    - Smali hax changes
+    - Fixed effects no persisting when exiting on recents swipe or pressing back from the app
+    - Fixed effects not starting on boot
+r0.3
     - Initial public BETA
     - Changed both app's namespace
     - Changed audio effect UUIDs
     - Merged framework files
     - Backported for support from Jellybean to Android N
+    - Smali hax to eliminate force closes

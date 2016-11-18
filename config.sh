@@ -46,7 +46,7 @@ POSTFSDATA=true
 LATESTARTSERVICE=true
 
 # Custom variables
-REV="1.0.0"
+REV="0.9.1"
 #APP1="Ax"
 #APP2="AxUI"
 #TMPDIR="dax"
@@ -69,7 +69,7 @@ OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "  LeEco LeMax 2 Atmos (Magisk) "
+  ui_print "   ZTE Axon 7 Atmos (Magisk)   "
   ui_print "     selinux enforcing fix     "
   ui_print "        Universal - Mod        "
   ui_print "        Revision $REV          "
