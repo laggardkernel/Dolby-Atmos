@@ -1,9 +1,9 @@
-id=dax
-name=LeEco LeMax 2 Atmos
-version=v2.3.a.12_r0
-versionCode=1
-author=ahrion
-description=LeEco LeMax 2 Atmos ported by ahrion, adapted as Magisk module by laggardkernel
-support=http://forum.xda-developers.com/android/software/soundmod-axon-7-dolby-atmos-t3412342
+id=dap
+name=Lenovo K3 Dolby Atmos
+version=r6.5
+versionCode=6
+author=worstenbrood
+description=Lenovo K3 Dolby Atmos ported by worstenbrood, adapted as Magisk module by laggardkernel
+support=http://forum.xda-developers.com/android/apps-games/mod-dolby-atmos-t3109446
 donate=http://topjohnwu.github.io/donate
 cacheModule=false

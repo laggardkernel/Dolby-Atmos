@@ -283,6 +283,7 @@ rm -rf $MODPATH
 mkdir -p $MODPATH/system/vendor/etc
 
 # Determine Android N
+<<COMMENT_Determine_Android
 ui_print "- Determining Android version"
 if [ "$API" -ge "24" ];
   then
@@ -291,11 +292,12 @@ if [ "$API" -ge "24" ];
     mkdir -p $MODPATH/system/bin 2>/dev/null
     echo 0 > $MODPATH/system/bin/logd
 fi
+COMMENT_Determine_Android
 
 # Copy files
 ui_print "- Copying files"
 cp -af $INSTALLER/system/* $MODPATH/system
-if (! $IS64BIT); then rm -rf $MODPATH/system/lib64; fi;
+#if (! $IS64BIT); then rm -rf $MODPATH/system/lib64; fi;
 
 cp -af $CONFIG_FILE $MODPATH$CONFIG_FILE 2>/dev/null
 #cp -af $HTC_CONFIG_FILE $MODPATH$HTC_CONFIG_FILE 2>/dev/null
@@ -330,8 +332,12 @@ if [ -f "$MODPATH$CONFIG_FILE" ]; then
     sed -i '/DOLBY_DAP/,/DOLBY_END/d' $MODPATH$CONFIG_FILE
   fi
   #sed -i '/ds {/,/}/d' $MODPATH$CONFIG_FILE
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$CONFIG_FILE
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$CONFIG_FILE
+  #sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$CONFIG_FILE
+  #sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$CONFIG_FILE
+  # Lenovo K3 Dolby ATMOS
+  sed -i '/dap {/,/}/d' $MODPATH$CONFIG_FILE
+  sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$CONFIG_FILE
+  sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$CONFIG_FILE
 fi
 
 if [ -f "$MODPATH$VENDOR_CONFIG" ]; then
@@ -351,8 +357,12 @@ if [ -f "$MODPATH$VENDOR_CONFIG" ]; then
     sed -i '/DOLBY_DAP/,/DOLBY_END/d' $MODPATH$VENDOR_CONFIG
   fi
   #sed -i '/ds {/,/}/d' $MODPATH$VENDOR_CONFIG
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$VENDOR_CONFIG
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$VENDOR_CONFIG
+  #sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$VENDOR_CONFIG
+  #sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$VENDOR_CONFIG
+  # Lenovo K3 Dolby ATMOS
+  sed -i '/dap {/,/}/d' $MODPATH$VENDOR_CONFIG
+  sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$VENDOR_CONFIG
+  sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$VENDOR_CONFIG
 fi
 
 if [ -f "$MODPATH$HTC_CONFIG_FILE" ]; then
@@ -367,8 +377,12 @@ if [ -f "$MODPATH$HTC_CONFIG_FILE" ]; then
   sed -i '/dax_sw {/,/}/d' $MODPATH$HTC_CONFIG_FILE
   sed -i '/dax_hw {/,/}/d' $MODPATH$HTC_CONFIG_FILE
   #sed -i '/ds {/,/}/d' $MODPATH$HTC_CONFIG_FILE
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$HTC_CONFIG_FILE
+  #sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$HTC_CONFIG_FILE
+  #sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$HTC_CONFIG_FILE
+  # Lenovo K3 Dolby ATMOS
+  sed -i '/dap {/,/}/d' $MODPATH$HTC_CONFIG_FILE
+  sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$HTC_CONFIG_FILE
+  sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$HTC_CONFIG_FILE
 fi
 
 if [ -f "$MODPATH$OTHER_VENDOR_FILE" ]; then
@@ -383,8 +397,12 @@ if [ -f "$MODPATH$OTHER_VENDOR_FILE" ]; then
   sed -i '/dax_sw {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
   sed -i '/dax_hw {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
   #sed -i '/ds {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$OTHER_VENDOR_FILE
+  #sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$OTHER_VENDOR_FILE
+  #sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$OTHER_VENDOR_FILE
+  # Lenovo K3 Dolby ATMOS
+  sed -i '/dap {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
+  sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$OTHER_VENDOR_FILE
+  sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$OTHER_VENDOR_FILE
 fi
 
 if [ -f "$MODPATH$OFFLOAD_CONFIG" ]; then
@@ -399,8 +417,12 @@ if [ -f "$MODPATH$OFFLOAD_CONFIG" ]; then
   sed -i '/dax_sw {/,/}/d' $MODPATH$OFFLOAD_CONFIG
   sed -i '/dax_hw {/,/}/d' $MODPATH$OFFLOAD_CONFIG
   #sed -i '/ds {/,/}/d' $MODPATH$OFFLOAD_CONFIG
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$OFFLOAD_CONFIG
+  #sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$OFFLOAD_CONFIG
+  #sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$OFFLOAD_CONFIG
+  # Lenovo K3 Dolby ATMOS
+  sed -i '/dap {/,/}/d' $MODPATH$OFFLOAD_CONFIG
+  sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$OFFLOAD_CONFIG
+  sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$OFFLOAD_CONFIG
 fi
 
 <<COMMENT_HTC_VENDOR

@@ -1,1 +1,1 @@
-# LeEco LeMax 2 Atmos
+# Lenovo K3 Dolby Atmos

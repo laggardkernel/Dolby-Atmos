@@ -33,7 +33,7 @@
 
 # This will be the folder name under /magisk or /cache/magisk
 # This should also be the same as the id in your module.prop to prevent confusion
-MODID=dax
+MODID=dap
 
 # Set to true if you need automount
 # Most mods would like it to be enabled
@@ -46,10 +46,10 @@ POSTFSDATA=true
 LATESTARTSERVICE=true
 
 # Custom variables
-REV="1.0.0"
-#APP1="Ax"
-#APP2="AxUI"
-#TMPDIR="dax"
+REV="r6.5"
+#APP1="As"
+#APP2="AsUI"
+#TMPDIR="dap"
 #SYSTEM="system"
 #SYSTEMLESS="systemless"
 
@@ -69,11 +69,9 @@ OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "  LeEco LeMax 2 Atmos (Magisk) "
-  ui_print "     selinux enforcing fix     "
-  ui_print "        Universal - Mod        "
-  ui_print "        Revision $REV          "
-  ui_print "          by ahrion            "
+  ui_print "     Lenovo K3 Dolby ATMOS     "
+  ui_print "            $VERSION           "
+  ui_print "        by worstenbrood        "
   ui_print "  Magisk Mod by laggardkernel  "
   ui_print "*******************************"
 }

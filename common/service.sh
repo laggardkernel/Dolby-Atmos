@@ -43,7 +43,7 @@ MODDIR=${0%/*}
 /data/magisk/resetprop dolby.monospeaker false
 
 # Ser SELinux Permissive
-setenforce 0
+#setenforce 0
 
 # KEEP DOLBY ATMOS IN MEMORY(temporarily unavailable)
 #/data/magisk/resetprop sys.keep_app_2 com.atmos

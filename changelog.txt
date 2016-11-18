@@ -1,13 +1,19 @@
-r1.0
-    - Rebuilt from newest 1.8 firmware release
-    - Audio post-processing (hifi/dts/dirac) integrated into apks (was omitted from previous builds)
-    - Permissions no longer need to be manually turned on with MM+
-    - Bug fixes
-r0.2
-    - Fixed install script
-r0.1
-    - Initial public BETA
-    - Changed both app's namespace
-    - Changed audio effect UUIDs
-    - Merged framework files
-    - Backported for support from Jellybean to Android N
+R6.5
+    - Fixed permissions
+    - Fixed issue with audio_effects.conf on some devices
+    - Fixed removal of As*
+R6.3
+    - Added permissions in installer script
+R6.2
+    - Patch both /system/etc/audio_effects.conf AND /system/vendor/etc/audio_effects.conf to bypass those badly implemented audio mods that blindly overwrite audio_effects.conf or put an unused audio_effects.conf in /system/vendor/etc.
+R6.1
+    - Renamed namespace
+    - Renamed Ds/DsUI to As/AsUI
+    - Start from a clean rom (dirty flash) when installing this since it will not cleanup the previous version !
+R5
+    - Removed demo video, size reduced to 3 mb
+R4
+    - Fixed compatibility for Android 4.x in Ds.apk and DsUI.apk
+    - Changed uuid and name of the library so it doesnt conflict with other dolby libraries (Ds and DsUI still do but will be overwritten)
+R1
+    - Initial release
