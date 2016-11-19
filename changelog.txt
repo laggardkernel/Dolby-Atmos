@@ -1,18 +1,8 @@
-r0.9.1
-    - Fixed issue where plugging in headphones would cause all effects to turn off 
-    - and require manually turning by on (thanks to @yoinx)
-r0.8.1
-    - Fixed "SU.IMG" error during install for users without systemless root
-r0.8
-    - Overhauled install script
-    - Fixed issues where users had to manually place files
-r0.7
-    - Script changes
-    - Smali hax changes
-    - Fixed effects no persisting when exiting on recents swipe or pressing back from the app
-    - Fixed effects not starting on boot
 r0.3
-    - Initial public BETA
+    - Initial Public BETA
+    - Permissions no longer need to be manually turned on with MM+
+r0.1/0.2
+    - Initial private ALPHA
     - Changed both app's namespace
     - Changed audio effect UUIDs
     - Merged framework files

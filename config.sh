@@ -46,7 +46,8 @@ POSTFSDATA=true
 LATESTARTSERVICE=true
 
 # Custom variables
-REV="0.9.1"
+VERSION="v2.2.1.7_r1"
+REV="r0.3"
 #APP1="Ax"
 #APP2="AxUI"
 #TMPDIR="dax"
@@ -70,10 +71,12 @@ OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
 print_modname() {
   ui_print "*******************************"
   ui_print "   ZTE Axon 7 Atmos (Magisk)   "
+  ui_print "           $VERSION            "
   ui_print "     selinux enforcing fix     "
   ui_print "        Universal - Mod        "
   ui_print "        Revision $REV          "
   ui_print "          by ahrion            "
+  ui_print "*******************************"
   ui_print "  Magisk Mod by laggardkernel  "
   ui_print "*******************************"
 }

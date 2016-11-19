@@ -2,9 +2,16 @@
 # Please don't hardcode /magisk/modname/... ; instead, please use $MODDIR/...
 # This will make your scripts compatible even if Magisk change its mount point in the future
 MODDIR=${0%/*}
+LOGFILE=/cache/magisk.log
 
 # This script will be executed in late_start service mode
 # More info in the main Magisk thread
+
+log_print() {
+  echo "dax: $1"
+  echo "dax: $1" >> $LOGFILE
+  log -p i -t dax "$1"
+}
 
 # Set any prop (with trigger)
 
@@ -20,6 +27,8 @@ MODDIR=${0%/*}
 /data/magisk/resetprop persist.sys.media.use-awesome 1
 /data/magisk/resetprop ro.audio.samplerate 48000
 /data/magisk/resetprop ro.audio.pcm.samplerate 48000
+
+log_print "Universal audio tweaks script has run successfully $(date +"%m-%d-%Y %H:%M:%S")"
 
 # VENDOR SPECIFIC DOLBY ATMOS TWEAKS
 /data/magisk/resetprop dmid 3067269873
@@ -41,6 +50,8 @@ MODDIR=${0%/*}
 /data/magisk/resetprop dolby.ds.virt.usb on
 /data/magisk/resetprop dolby.ds.volumeleveler.state off
 /data/magisk/resetprop dolby.monospeaker false
+
+log_print "Dolby Atmos script has run successfully $(date +"%m-%d-%Y %H:%M:%S")"
 
 # Ser SELinux Permissive
 setenforce 0
