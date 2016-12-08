@@ -1,7 +1,7 @@
 id=dap
 name=Lenovo K3 Dolby Atmos
-version=r6.5
-versionCode=6
+version=v1.1.4_r6.5
+versionCode=65
 author=worstenbrood
 description=Lenovo K3 Dolby Atmos ported by worstenbrood, adapted as Magisk module by laggardkernel
 support=http://forum.xda-developers.com/android/apps-games/mod-dolby-atmos-t3109446
