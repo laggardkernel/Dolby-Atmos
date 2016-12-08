@@ -45,7 +45,14 @@ POSTFSDATA=true
 # Set to true if you need late_start service script
 LATESTARTSERVICE=true
 
+# Set to true if you need custom setprop script
+PROPFILE=true
+# personal file's name located anywhere on your internal storage
+buildname="custom_build.prop"
+tweakname="tweak.prop"
+
 # Custom variables
+VERSION="v2.2.1.7_r1"
 REV="0.9.1"
 #APP1="Ax"
 #APP2="AxUI"
@@ -55,11 +62,12 @@ REV="0.9.1"
 
 # FILE LOCATIONS
 CONFIG_FILE=/system/etc/audio_effects.conf
-HTC_CONFIG_FILE=/system/etc/htc_audio_effects.conf
 VENDOR_CONFIG=/system/vendor/etc/audio_effects.conf
+HTC_CONFIG_FILE=/system/etc/htc_audio_effects.conf
 OTHER_VENDOR_FILE=/system/etc/audio_effects_vendor.conf
-OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
-#HTC_VENDOR=/vendor/etc/audio_effects.conf
+#OFFLOAD_CONFIG=/system/vendor/etc/audio_effects_offload.conf
+OFFLOAD_CONFIG=/system/vendor/etc/audio_offload_effects.conf
+HTC_VENDOR=/vendor/etc/audio_effects.conf
 
 ##########################################################################################
 # Installation Message
@@ -70,12 +78,13 @@ OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
 print_modname() {
   ui_print "*******************************"
   ui_print "   ZTE Axon 7 Atmos (Magisk)   "
+  ui_print "           $VERSION            "
   ui_print "     selinux enforcing fix     "
   ui_print "        Universal - Mod        "
   ui_print "        Revision $REV          "
   ui_print "          by ahrion            "
-  ui_print "  Magisk Mod by laggardkernel  "
   ui_print "*******************************"
+  ui_print "  Magisk MOD by laggardkernel  "
 }
 
 ##########################################################################################
@@ -107,6 +116,14 @@ REPLACE="
 set_permissions() {
   # Default permissions, don't remove them
   set_perm_recursive  $MODPATH  0  0  0755  0644
+
+  if [ -f "$MODPATH/system/bin" ]; then
+    set_perm_recursive  $MODPATH/system/bin  0  2000  0755  0755
+  fi
+
+  if [ -f "$MODPATH/system/xbin" ]; then
+    set_perm_recursive  $MODPATH/system/xbin  0  2000  0755  0755
+  fi
 
   # Only some special files require specific permission settings
   # The default permissions should be good enough for most cases

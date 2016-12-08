@@ -296,11 +296,15 @@ fi
 # Copy files
 ui_print "- Copying files"
 cp -af $INSTALLER/system/* $MODPATH/system
-if (! $IS64BIT); then rm -rf $MODPATH/system/vendor/lib64; fi;
+
+if (! $IS64BIT); then 
+  rm -rf $MODPATH/system/lib64 2>/dev/null
+  rm -rf $MODPATH/system/vendor/lib64 2>/dev/null
+fi
 
 cp -af $CONFIG_FILE $MODPATH$CONFIG_FILE 2>/dev/null
-#cp -af $HTC_CONFIG_FILE $MODPATH$HTC_CONFIG_FILE 2>/dev/null
-cp -af $VENDOR_CONFIG $MODPATH$VENDOR_CONFIG 2>/dev/null
+cp -af $HTC_CONFIG_FILE $MODPATH$HTC_CONFIG_FILE 2>/dev/null
+#cp -af $VENDOR_CONFIG $MODPATH$VENDOR_CONFIG 2>/dev/null
 cp -af $OTHER_VENDOR_FILE $MODPATH$OTHER_VENDOR_FILE 2>/dev/null
 cp -af $OFFLOAD_CONFIG $MODPATH$OFFLOAD_CONFIG 2>/dev/null
 
@@ -483,6 +487,12 @@ if [ -f "/vendor/etc/audio_policy.conf" ]; then
   sed -i '/raw {/,/}/d' $MODPATH/vendor/etc/audio_policy.conf
 fi
 COMMENT_VENDOR_POLICY
+
+# build property database patch for MOD by resetprop, through a
+# property file called "custom_build.prop" or any other name
+if ($PROPFILE); then
+  cp -af "$INSTALLER/common/$buildname" "$MODPATH/$buildname"
+fi
 
 <<COMMENT_BUILD_PROP
 # build.prop patch for ViPER4Android Stock by replacing build.prop.
