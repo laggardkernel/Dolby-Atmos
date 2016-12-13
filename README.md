@@ -1,20 +1,86 @@
-# How to Create A New Repo
-1. Fork this repo
-2. Edit "config.sh", and follow the instructions in the script file to create your own Magisk Module. Note that you might want to use Notepad++ on Windows, since the script files are using Unix endline.
-3. Edit "module.prop" with the manifest of your module
-4. Edit "changelog.txt", the info will be shown in Magisk Manager
-5. Edit the description of your Github repo to the ID of the module. Magisk Manager uses that value as identification
-5. Contact @topjohnwu on XDA for a request to add a new module repo. You'll get an empty repo with permission only given to you and the owners of Magisk-Modules-Repo.
-6. Push your module to the new repo created for you. You can push updates directly to your repo in the future as you wish.
+# Ubuntu Fonts (Magisk)
 
-# Notes
-1. In the module.prop file, version is any string you like, any fancy version name (e.g. ultra-beta-v0.0.0.1) is allowed. However, the versionCode "MUST" be an integer. The value is used for version comparison.
-2. Make sure the ID in module.prop doesn't contain any spaces.
-3. Any changes to the branch "master" will be reflected to all users immediately. If you are working on an update for a module, please work on another branch, make sure it works, and then merge the changes to master.
+Repalce fonts for Latin letters(Roboto as default) with Ubuntu fonts systemlessly. The method is origianlly created by [RadarNyan](https://plus.google.com/+SatsukiMisaki "見崎未咲（RadarNyan）") on a [themex post](http://bbs.themex.net/showthread.php?p=1308726 "完美更换 Android 5.0+ 系统字体（英文字体，不修改字体文件）").
 
-# Update A Module in a Nutshell
-1. Open a new branch, and start working on it
-2. Test if everything works
-3. Bump up the versionCode in module.prop, or Magisk Manager won't know that your module is updated!
-4. Edit changelog.txt with the changes you made
-3. Merge the changes to master, all users will now receive the update in Magisk Manager
+System fonts configuration files `system_fonts.xml` and `fallback_fontx.xml` are combined as `fonts.xml` since Android 5.0. System default fonts and fallback fonts on Android could be changed without modifying the font files, like .ttf .otf, simply through modifying `fonts.xml`.
+
+### Detail
+
+While, change default fonts by modifying the configuration file is not enough, which will cause a different font height comparing with the default font, Roboto. This is due to the different Metrics in different fonts. Instead of modifying the font itself, .ttf or .otf, which is kind of dirty, [RadarNyan](https://plus.google.com/+SatsukiMisaki "見崎未咲（RadarNyan）") choose to solve this using the fallback mechanism of fonts on Android,
+
+1. Create a series fake fonts from Roboto without Glyph;
+2. Modify fonts.xml to let RobotoFake be default fonts and Ubuntu as fallback;
+```html
+<familyset version="22">
+    <!-- RobotoFake provides Metrics -->
+    <family name="sans-serif">
+        <font weight="100" style="normal">RobotoFake-Thin.ttf</font>
+        <font weight="100" style="italic">RobotoFake-ThinItalic.ttf</font>
+        <font weight="300" style="normal">RobotoFake-Light.ttf</font>
+        <font weight="300" style="italic">RobotoFake-LightItalic.ttf</font>
+        <font weight="400" style="normal">RobotoFake-Regular.ttf</font>
+        <font weight="400" style="italic">RobotoFake-Italic.ttf</font>
+        <font weight="500" style="normal">RobotoFake-Medium.ttf</font>
+        <font weight="500" style="italic">RobotoFake-MediumItalic.ttf</font>
+        <font weight="900" style="normal">RobotoFake-Black.ttf</font>
+        <font weight="900" style="italic">RobotoFake-BlackItalic.ttf</font>
+        <font weight="700" style="normal">RobotoFake-Bold.ttf</font>
+        <font weight="700" style="italic">RobotoFake-BoldItalic.ttf</font>
+    </family>
+    
+    <!-- Ubuntu font is default -->
+    <family>
+        <font weight="300" style="normal">Ubuntu-L.ttf</font>
+        <font weight="300" style="italic">Ubuntu-LI.ttf</font>
+        <font weight="400" style="normal">Ubuntu-R.ttf</font>
+        <font weight="400" style="italic">Ubuntu-RI.ttf</font>
+        <font weight="500" style="normal">Ubuntu-M.ttf</font>
+        <font weight="500" style="italic">Ubuntu-MI.ttf</font>
+        <font weight="700" style="normal">Ubuntu-B.ttf</font>
+        <font weight="700" style="italic">Ubuntu-BI.ttf</font>
+    </family>
+
+    <!-- Roboto as default fallback -->
+    <family>
+        <font weight="100" style="normal">Roboto-Thin.ttf</font>
+        <font weight="100" style="italic">Roboto-ThinItalic.ttf</font>
+        <font weight="300" style="normal">Roboto-Light.ttf</font>
+        <font weight="300" style="italic">Roboto-LightItalic.ttf</font>
+        <font weight="400" style="normal">Roboto-Regular.ttf</font>
+        <font weight="400" style="italic">Roboto-Italic.ttf</font>
+        <font weight="500" style="normal">Roboto-Medium.ttf</font>
+        <font weight="500" style="italic">Roboto-MediumItalic.ttf</font>
+        <font weight="900" style="normal">Roboto-Black.ttf</font>
+        <font weight="900" style="italic">Roboto-BlackItalic.ttf</font>
+        <font weight="700" style="normal">Roboto-Bold.ttf</font>
+        <font weight="700" style="italic">Roboto-BoldItalic.ttf</font>
+    </family>
+(The following is omitted)
+```
+
+Since RobotoFake fonts don't have Glyph, they are made as a Metrics provider for the fallback fonts, Ubuntu fonts in this case. The orgianl Roboto is made a second default fallback to provide the possible lost characters in Ubuntu.
+
+**NOTE: The 2nd and 3rd parts of the configuration above should not inclue name property in the `<family>` tag.**
+
+The advantage of this solution is that, fonts for Latin characters could be changed on your will without touching font files themselves by modifying the 2nd part of the template above. The font weights should be written down as what it is. No need to be worried about that lost characters in your custom fonts be replaced by Roboto. Because the fallback mechanism on Android is based on "family" but "weight". 
+
+Besides, dehint is recommended for a better display on high-resolution screens.
+
+### Display effects
+
+1. Modify fonts.xml directly
+
+    ![Modify fonts.xml directly](https://raw.githubusercontent.com/laggardkernel/magisk-module-template/ubuntu_font/src/1.png)
+
+2. Original Roboto
+
+    ![Original Roboto](https://raw.githubusercontent.com/laggardkernel/magisk-module-template/ubuntu_font/src/2.png)
+
+3. Use the fallback trick
+
+    ![Use the fallback trick](https://raw.githubusercontent.com/laggardkernel/magisk-module-template/ubuntu_font/src/3.png)
+
+### Credit
+
+- original creator [RadarNyan](https://plus.google.com/+SatsukiMisaki "見崎未咲（RadarNyan）")
+- magisk module by [laggardkernel](https://github.com/laggardkernel)

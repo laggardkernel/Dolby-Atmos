@@ -175,9 +175,10 @@ fi
 INSTALLER=$TMPDIR/$MODID
 MODPATH=$MOUNTPATH/$MODID
 
+rm -rf $INSTALLER
 mkdir -p $INSTALLER
 cd $INSTALLER
-unzip -o "$ZIP" common/* module.prop
+unzip -o "$ZIP" common/* module.prop custom.xml
 
 ##########################################################################################
 # Main
@@ -265,10 +266,51 @@ fi
 # Create mod paths
 rm -rf $MODPATH
 mkdir -p $MODPATH
+mkdir -p $MODPATH/system/etc
 
 # Copy files
 ui_print "- Copying files"
 unzip -o "$ZIP" system/* -d $MODPATH
+
+# Cpoy fonts configuration files
+cp -af /system/etc/fonts.xml $MODPATH/system/etc/fonts.xml 2>/dev/null
+# cp -af /system/etc/fallback_fonts.xml $MODPATH/system/etc/fallback_fonts.xml 2>/dev/null
+
+# Add confuguration for Ubuntu fonts
+#    <!-- RobotoFake provides Metrics -->
+#    <family name="sans-serif">
+#        <font weight="100" style="normal">RobotoFake-Thin.ttf</font>
+#        <font weight="100" style="italic">RobotoFake-ThinItalic.ttf</font>
+#        <font weight="300" style="normal">RobotoFake-Light.ttf</font>
+#        <font weight="300" style="italic">RobotoFake-LightItalic.ttf</font>
+#        <font weight="400" style="normal">RobotoFake-Regular.ttf</font>
+#        <font weight="400" style="italic">RobotoFake-Italic.ttf</font>
+#        <font weight="500" style="normal">RobotoFake-Medium.ttf</font>
+#        <font weight="500" style="italic">RobotoFake-MediumItalic.ttf</font>
+#        <font weight="900" style="normal">RobotoFake-Black.ttf</font>
+#        <font weight="900" style="italic">RobotoFake-BlackItalic.ttf</font>
+#        <font weight="700" style="normal">RobotoFake-Bold.ttf</font>
+#        <font weight="700" style="italic">RobotoFake-BoldItalic.ttf</font>
+#    </family>
+#    
+#    <!-- Ubuntu font is default -->
+#    <family>
+#        <font weight="300" style="normal">Ubuntu-L.ttf</font>
+#        <font weight="300" style="italic">Ubuntu-LI.ttf</font>
+#        <font weight="400" style="normal">Ubuntu-R.ttf</font>
+#        <font weight="400" style="italic">Ubuntu-RI.ttf</font>
+#        <font weight="500" style="normal">Ubuntu-M.ttf</font>
+#        <font weight="500" style="italic">Ubuntu-MI.ttf</font>
+#        <font weight="700" style="normal">Ubuntu-B.ttf</font>
+#        <font weight="700" style="italic">Ubuntu-BI.ttf</font>
+#    </family>
+#
+#    <!-- Roboto as default fallback -->
+#    <family name="sans-serif">
+
+sed -i "s/<!-- first font is default -->/<!-- Roboto as default fallback -->/" $MODPATH/system/etc/fonts.xml
+sed -i "s/<family name=\"sans-serif\">/<family>/" $MODPATH/system/etc/fonts.xml
+sed -i "/<familyset version=.*>/r $INSTALLER/custom.xml" $MODPATH/system/etc/fonts.xml
 
 # Handle replace folders
 for TARGET in $REPLACE; do

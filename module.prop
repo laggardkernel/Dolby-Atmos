@@ -1,9 +1,9 @@
-id=template
-name=Template Module
-version=v1
-versionCode=1
-author=topjohnwu
-description=A short description
-support=http://forum.xda-developers.com/showthread.php?t=3432382
+id=ubuntu_font
+name=Ubuntu Font
+version=v0.83_r2.0
+versionCode=4
+author=RadarNyan
+description=Set main font as Ubuntu by fonts.xml on Android, mod by RadarNyan, ported as a Magisk module by laggardkernel
+support=http://bbs.themex.net/showthread.php?p=1308726
 donate=http://topjohnwu.github.io/donate
 cacheModule=false

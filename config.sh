@@ -36,7 +36,7 @@ CACHEMOD=false
 
 # This will be the folder name under /magisk or /cache/magisk
 # This should also be the same as the id in your module.prop to prevent confusion
-MODID=template
+MODID=ubuntu_font
 
 # Set to true if you need automount
 # Most mods would like it to be enabled
@@ -51,6 +51,9 @@ POSTFSDATA=false
 # Set to true if you need late_start service script (Only available in non-cache mods)
 LATESTARTSERVICE=false
 
+VERSION="v0.83"
+REV="r2.0"
+
 ##########################################################################################
 # Installation Message
 ##########################################################################################
@@ -59,8 +62,13 @@ LATESTARTSERVICE=false
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "     Magisk Module Template    "
+  ui_print "         Ubuntu Fonts          "
+  ui_print " "
+  ui_print "          ${VERSION}_$REV      "
+  ui_print " "
+  ui_print "         by RadarNyan          "
   ui_print "*******************************"
+  ui_print "  Magisk mod by laggardkernel  "
 }
 
 ##########################################################################################
@@ -92,6 +100,14 @@ REPLACE="
 set_permissions() {
   # Default permissions, don't remove them
   set_perm_recursive  $MODPATH  0  0  0755  0644
+
+  if [ -d "$MODPATH/system/bin" ]; then
+    set_perm_recursive  $MODPATH/system/bin  0  2000  0755  0755
+  fi
+
+  if [ -d "$MODPATH/system/xbin" ]; then
+    set_perm_recursive  $MODPATH/system/xbin  0  2000  0755  0755
+  fi
 
   # Only some special files require specific permission settings
   # The default permissions should be good enough for most cases
