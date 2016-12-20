@@ -36,7 +36,7 @@ CACHEMOD=false
 
 # This will be the folder name under /magisk or /cache/magisk
 # This should also be the same as the id in your module.prop to prevent confusion
-MODID=template
+MODID=bin_bind_demo
 
 # Set to true if you need automount
 # Most mods would like it to be enabled
@@ -46,10 +46,12 @@ AUTOMOUNT=true
 POSTFS=false
 
 # Set to true if you need post-fs-data script (Only available in non-cache mods)
-POSTFSDATA=false
+POSTFSDATA=true
 
 # Set to true if you need late_start service script (Only available in non-cache mods)
 LATESTARTSERVICE=false
+
+VERSION="v1.0"
 
 ##########################################################################################
 # Installation Message
@@ -59,8 +61,11 @@ LATESTARTSERVICE=false
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "     Magisk Module Template    "
+  ui_print "         bin_bind Demo         "
+  ui_print " "
+  ui_print "              $VERSION"
   ui_print "*******************************"
+  ui_print "  Magisk MOD by laggardkernel  "
 }
 
 ##########################################################################################
@@ -92,6 +97,18 @@ REPLACE="
 set_permissions() {
   # Default permissions, don't remove them
   set_perm_recursive  $MODPATH  0  0  0755  0644
+  
+  # bin_mount binaries to /system/bin is broken, do it manually
+  ui_print "- Changing bin binaries mount method as manual"
+  if [ -d "$MODPATH/system/bin" ]; then
+    mv -f "$MODPATH/system/bin" "$MODPATH/bin"
+    set_perm_recursive  $MODPATH/bin  0  2000  0755  0755
+    # Touch an empty "enable" file as switch
+    mkdir -p $MODPATH/bin_bind
+    touch $MODPATH/bin_bind/enable
+  fi
+  
+  # bin_mount binaries to /system/xbin works well, leave them alone
 
   # Only some special files require specific permission settings
   # The default permissions should be good enough for most cases

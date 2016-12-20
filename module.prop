@@ -1,9 +1,9 @@
-id=template
-name=Template Module
-version=v1
-versionCode=1
-author=topjohnwu
-description=A short description
-support=http://forum.xda-developers.com/showthread.php?t=3432382
-donate=http://topjohnwu.github.io/donate
+id=bin_bind_demo
+name=Bin_bind Demo
+version=v1.0
+versionCode=10
+author=laggardkernel
+description=A simple demo for bind_mount binaries to /system/bin manually
+support=https://github.com/laggardkernel/magisk-module-template/tree/bin_bind_demo
+donate=https://github.com/laggardkernel
 cacheModule=false
