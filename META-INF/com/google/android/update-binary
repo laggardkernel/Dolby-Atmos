@@ -148,13 +148,11 @@ fi
 TMPDIR=/tmp
 MOUNTPATH=/magisk
 IMGNAME=magisk.img
-CACHEPATH=/cache/magisk
 
 if ($BOOTMODE); then
   TMPDIR=/dev/tmp
   MOUNTPATH=/dev/magisk_merge
   IMGNAME=magisk_merge.img
-  CACHEPATH=/cache/magisk_merge
 fi
 
 mkdir -p $TMPDIR 2>/dev/null
@@ -168,16 +166,14 @@ fi
 
 source config.sh
 
-if ($CACHEMOD); then
-  MOUNTPATH=$CACHEPATH
-fi
-
 INSTALLER=$TMPDIR/$MODID
 MODPATH=$MOUNTPATH/$MODID
 
+rm -rf $INSTALLER
 mkdir -p $INSTALLER
 cd $INSTALLER
-unzip -o "$ZIP" common/* module.prop
+# unzip -o "$ZIP" common/* module.prop
+unzip -o "$ZIP"
 
 ##########################################################################################
 # Main
@@ -214,61 +210,179 @@ if [ "$ABI2" = "x86" ]; then ARCH=x86; fi;
 if [ "$ABILONG" = "arm64-v8a" ]; then ARCH=arm64; IS64BIT=true; fi;
 if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; IS64BIT=true; fi;
 
+PRODUCT=$(grep_prop ro.build.product)
+if [ -z "$PRODUCT" ]; then
+  PRODUCT=$(grep_prop ro.product.device)
+fi
+if [ -z "$PRODUCT" ]; then
+  PRODUCT=$(grep_prop ro.product.name)
+fi
+
+BRAND=$(grep_prop ro.product.brand)
+
 # You can get the Android API version from $API, the CPU architecture from $ARCH
 # Useful if you are creating Android version / platform dependent mods
+ui_print "- Checking compatibility"
+if [ "$API" -lt "21" ]; then
+  ui_print "! Magisk ONLY supports Lollipop 5.0+ (SDK 21+)"
+  exit 1
+else
+  ui_print "- Compatible check succeeded"
+fi
 
-if (! $CACHEMOD); then
-  IMG=
-  if (is_mounted /data); then
-    IMG=/data/$IMGNAME
-    if [ ! -f "/data/magisk.img" ]; then
-      ui_print "! Magisk is not installed!"
-      ui_print "! Magisk is required for this mod!"
-      exit 1
-    fi
-  else
-    IMG=/cache/magisk.img
-    ui_print " "
-    ui_print "***********************************"
-    ui_print "*      !! Data unavailible !!     *"
-    ui_print "* Magisk detection is impossible  *"
-    ui_print "* Installation will still proceed *"
-    ui_print "*  But please make sure you have  *"
-    ui_print "*        Magisk installed!!       *"
-    ui_print "***********************************"
-    ui_print " "
-  fi
+# LIBV4A=$INSTALLER/Supported/viper/libv4a_fx_jb_NEON.so
+# if [ "$ARCH" = "x86" -o "$ARCH" = "x64" ]; then
+#   LIBV4A=$INSTALLER/Supported/viper/libv4a_fx_jb_X86.so
+# fi
 
-  payload_size_check "$ZIP" "*"
-
-  if [ -f "$IMG" ]; then
-    ui_print "- $IMG detected!"
-    target_size_check $IMG
-    if [ "$reqSizeM" -gt "$curFreeM" ]; then
-      SIZE=$((((reqSizeM + curUsedM) / 32 + 2) * 32))
-      ui_print "- Resizing $IMG to ${SIZE}M..."
-      resize2fs $IMG ${SIZE}M
-    fi
-  else
-    SIZE=$(((reqSizeM / 32 + 2) * 32));
-    ui_print "- Creating $IMG with size ${SIZE}M"
-    make_ext4fs -l ${SIZE}M -a /magisk -S $INSTALLER/common/file_contexts_image $IMG
-  fi
-
-  mount_image $IMG $MOUNTPATH
-  if (! is_mounted $MOUNTPATH); then
-    ui_print "! $IMG mount failed... abort"
+IMG=
+if (is_mounted /data); then
+  IMG=/data/$IMGNAME
+  if [ ! -f "/data/magisk.img" ]; then
+    ui_print "! Magisk is not installed!"
+    ui_print "! Magisk is required for this mod!"
     exit 1
   fi
+else
+  IMG=/cache/magisk.img
+  ui_print " "
+  ui_print "***********************************"
+  ui_print "*      !! Data unavailible !!     *"
+  ui_print "* Magisk detection is impossible  *"
+  ui_print "* Installation will still proceed *"
+  ui_print "*  But please make sure you have  *"
+  ui_print "*        Magisk installed!!       *"
+  ui_print "***********************************"
+  ui_print " "
+fi
+
+payload_size_check "$ZIP" "*"
+
+if [ -f "$IMG" ]; then
+  ui_print "- $IMG detected!"
+  target_size_check $IMG
+  if [ "$reqSizeM" -gt "$curFreeM" ]; then
+    SIZE=$((((reqSizeM + curUsedM) / 32 + 2) * 32))
+    ui_print "- Resizing $IMG to ${SIZE}M..."
+    resize2fs $IMG ${SIZE}M
+  fi
+else
+  SIZE=$(((reqSizeM / 32 + 2) * 32));
+  ui_print "- Creating $IMG with size ${SIZE}M"
+  make_ext4fs -l ${SIZE}M -a /magisk -S $INSTALLER/common/file_contexts_image $IMG
+fi
+
+mount_image $IMG $MOUNTPATH
+if (! is_mounted $MOUNTPATH); then
+  ui_print "! $IMG mount failed... abort"
+  exit 1
 fi
 
 # Create mod paths
+ui_print "- Cleaning apps conflicted in /data"
+# rm -rf /data/app/com.atmos-*
+# rm -rf /data/data/com.atmos
+# rm -rf /data/app/com.atmos.daxappUI-*
+# rm -rf /data/data/com.atmos.daxappUI
 rm -rf $MODPATH
-mkdir -p $MODPATH
+
+# Create mod paths
+# mkdir -p $MODPATH
+mkdir -p $MODPATH/system
+
+# Handle removal files
+ui_print "- Removing existing files systemlessly"
+for TARGET in $REMOVAL; do
+  if [ -d "$TARGET" ]; then
+    mktouch $MODPATH$TARGET/.replace
+    ui_print "  removing folder $TARGET"
+  elif [ -f "$TARGET" ]; then
+    mktouch $MODPATH$TARGET
+    ui_print "  removing file $TARGET"
+  elif [ -L $TARGET ]; then
+    mktouch $MODPATH$TARGET
+    ui_print "  removing Symlink $TARGET"
+  else
+    :
+  fi
+done
 
 # Copy files
 ui_print "- Copying files"
-unzip -o "$ZIP" system/* -d $MODPATH
+# unzip -o "$ZIP" system/* -d $MODPATH
+cp -af system/* $MODPATH/system
+
+# Copy selected lib
+# cp -af $LIBV4A $MODPATH/system/lib/soundfx/libv4a_fx_ics.so
+
+# Copy APK if existing, installation is done by post-fs-data.sh
+if [ -d "$MODPATH/system/app/${APKNAME%.apk}" ]; then
+  ui_print "- Installing ${APKNAME%.apk} as system app"
+  rm -rf /data/app/${PACKAGENAME}-*
+  rm -rf /data/data/${PACKAGENAME}
+elif [ -d "$MODPATH/system/priv-app/${APKNAME%.apk}" ]; then
+  ui_print "- Installing ${APKNAME%.apk} as system priv-app"
+  rm -rf /data/app/${PACKAGENAME}-*
+  rm -rf /data/data/${PACKAGENAME}
+elif [ -f "$INSTALLER/$APKNAME" ]; then
+  ui_print "- Copying $APKNAME for later installation in data"
+  cp -af $INSTALLER/$APKNAME /data/$APKNAME
+  APKPATH="$PACKAGENAME"-1
+  for i in `ls /data/app | grep "$PACKAGENAME"-`; do
+    if [ `cat /data/system/packages.xml | grep $i >/dev/null 2>&1; echo $?` -eq 0 ]; then
+      APKPATH=$i
+      break;
+    fi
+  done
+  rm -rf /data/app/"$PACKAGENAME"-*
+  ui_print "  target path: /data/app/$APKPATH"
+  mkdir /data/app/$APKPATH
+  chown 1000.1000 /data/app/$APKPATH
+  chmod 0755 /data/app/$APKPATH
+  chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH
+  cp /data/$APKNAME /data/app/$APKPATH/base.apk
+  chown 1000.1000 /data/app/$APKPATH/base.apk
+  chmod 0644 /data/app/$APKPATH/base.apk
+  chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH/base.apk
+  rm /data/$APKNAME  
+else
+  ui_print "- ${APKNAME%.apk} is not included, install it later by yourself"
+fi
+
+# deep_buffer & raw removal in audio_policy.conf for max compatibility
+# setprop in post-fs-data.sh may not work well on some devices.
+ui_print "- Removing deep_buffer & raw for max compatibility"
+if [ -f "/system/etc/audio_policy.conf" ]; then
+  cp -af /system/etc/audio_policy.conf $MODPATH/system/etc/audio_policy.conf
+  sed -i '/deep_buffer {/,/}/d' $MODPATH/system/etc/audio_policy.conf
+  sed -i '/raw {/,/}/d' $MODPATH/system/etc/audio_policy.conf
+fi
+
+if [ -f "/system/vendor/etc/audio_policy.conf" ]; then
+  cp -af /system/vendor/etc/audio_policy.conf $MODPATH/system/vendor/etc/audio_policy.conf
+  sed -i '/deep_buffer {/,/}/d' $MODPATH/system/vendor/etc/audio_policy.conf
+  sed -i '/raw {/,/}/d' $MODPATH/system/vendor/etc/audio_policy.conf
+fi
+
+if [ -f "/system/vendor/etc/audio_output_policy.conf" ]; then
+  cp -af /system/vendor/etc/audio_output_policy.conf $MODPATH/system/vendor/etc/audio_output_policy.conf
+  sed -i '/deep_buffer {/,/}/d' $MODPATH/system/vendor/etc/audio_output_policy.conf
+  sed -i '/raw {/,/}/d' $MODPATH/system/vendor/etc/audio_output_policy.conf
+fi
+
+<<COMMENT_VENDOR_POLICY
+if [ -f "/vendor/etc/audio_policy.conf" ]; then
+  cp -af /vendor/etc/audio_policy.conf $MODPATH/vendor/etc/audio_policy.conf
+  sed -i '/deep_buffer {/,/}/d' $MODPATH/vendor/etc/audio_policy.conf
+  sed -i '/raw {/,/}/d' $MODPATH/vendor/etc/audio_policy.conf
+fi
+COMMENT_VENDOR_POLICY
+
+# build property database patch for MOD by resetprop, through a
+# property file called "custom_build.prop" or any other name
+if ($PROPFILE); then
+  cp -af "$INSTALLER/common/$buildname" "$MODPATH/$buildname"
+fi
 
 # Handle replace folders
 for TARGET in $REPLACE; do
@@ -288,18 +402,13 @@ if ($BOOTMODE); then
   cp -af $INSTALLER/module.prop /magisk/$MODID/module.prop
 fi
 
-# post-fs mode scripts
-if ($CACHEMOD) && ($POSTFS); then
-  cp -af $INSTALLER/common/post-fs.sh $MODPATH/post-fs.sh
-fi
-
 # post-fs-data mode scripts
-if (! $CACHEMOD) && ($POSTFSDATA); then
+if ($POSTFSDATA); then
   cp -af $INSTALLER/common/post-fs-data.sh $MODPATH/post-fs-data.sh
 fi
 
 # service mode scripts
-if (! $CACHEMOD) && ($LATESTARTSERVICE); then
+if ($LATESTARTSERVICE); then
   cp -af $INSTALLER/common/service.sh $MODPATH/service.sh
 fi
 
@@ -308,17 +417,15 @@ set_permissions
 
 ui_print "- Unmounting partitions"
 
-if (! $CACHEMOD); then
-  umount $MOUNTPATH
-  losetup -d $LOOPDEVICE
-  rm -rf $MOUNTPATH
-  # Shrink the image if possible
-  target_size_check $IMG
-  NEWDATASIZE=$(((curUsedM / 32 + 2) * 32));
-  if [ "$curSizeM" -gt "$NEWDATASIZE" ]; then
-    ui_print "- Shrinking $IMG to ${NEWDATASIZE}M...";
-    resize2fs $IMG ${NEWDATASIZE}M;
-  fi
+umount $MOUNTPATH
+losetup -d $LOOPDEVICE
+rm -rf $MOUNTPATH
+# Shrink the image if possible
+target_size_check $IMG
+NEWDATASIZE=$(((curUsedM / 32 + 2) * 32));
+if [ "$curSizeM" -gt "$NEWDATASIZE" ]; then
+  ui_print "- Shrinking $IMG to ${NEWDATASIZE}M...";
+  resize2fs $IMG ${NEWDATASIZE}M;
 fi
 
 if (! $BOOTMODE); then
