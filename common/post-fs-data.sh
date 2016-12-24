@@ -32,36 +32,40 @@ bind_mount() {
   fi
 }
 
-# Install Android package $APKNAME
-if [ -f "/cache/$APKNAME" ]; then
-  cp /cache/$APKNAME /data/$APKNAME
-  rm /cache/$APKNAME
-fi
+install_package() {
+  # Install Android package $APKNAME $PACKAGENAME
+  if [ -f "/cache/$1" ]; then
+    cp /cache/$1 /data/$1
+    rm /cache/$1
+  fi
+  
+  if [ -f "/data/$1" ]; then
+    log_print "installing $1 in /data"
+    APKPATH="$2"-1
+    for i in `ls /data/app | grep "$2"-`; do
+      if [ `cat /data/system/packages.xml | grep $i >/dev/null 2>&1; echo $?` -eq 0 ]; then
+        APKPATH=$i
+        break;
+      fi
+    done
+    rm -rf /data/app/"$2"-*
+    log_print "target path: /data/app/$APKPATH"
+    mkdir /data/app/$APKPATH
+    chown 1000.1000 /data/app/$APKPATH
+    chmod 0755 /data/app/$APKPATH
+    chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH
+    cp /data/$1 /data/app/$APKPATH/base.apk
+    chown 1000.1000 /data/app/$APKPATH/base.apk
+    chmod 0644 /data/app/$APKPATH/base.apk
+    chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH/base.apk
+    rm /data/$1
+    sync
+    # just in case
+    REBOOT=true
+  fi
+}
 
-if [ -f "/data/$APKNAME" ]; then
-  log_print "installing $APKNAME in /data"
-  APKPATH="$PACKAGENAME"-1
-  for i in `ls /data/app | grep "$PACKAGENAME"-`; do
-    if [ `cat /data/system/packages.xml | grep $i >/dev/null 2>&1; echo $?` -eq 0 ]; then
-      APKPATH=$i
-      break;
-    fi
-  done
-  rm -rf /data/app/"$PACKAGENAME"-*
-  log_print "target path: /data/app/$APKPATH"
-  mkdir /data/app/$APKPATH
-  chown 1000.1000 /data/app/$APKPATH
-  chmod 0755 /data/app/$APKPATH
-  chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH
-  cp /data/$APKNAME /data/app/$APKPATH/base.apk
-  chown 1000.1000 /data/app/$APKPATH/base.apk
-  chmod 0644 /data/app/$APKPATH/base.apk
-  chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH/base.apk
-  rm /data/$APKNAME
-  sync
-  # just in case
-  REBOOT=true
-fi
+install_package "$APKNAME" "$PACKAGENAME"
 
 # sometimes we need to reboot, make it so
 if ($REBOOT); then

@@ -315,39 +315,8 @@ cp -af system/* $MODPATH/system
 # Copy selected lib
 # cp -af $LIBV4A $MODPATH/system/lib/soundfx/libv4a_fx_ics.so
 
-# Copy APK if existing, installation is done by post-fs-data.sh
-if [ -d "$MODPATH/system/app/${APKNAME%.apk}" ]; then
-  ui_print "- Installing ${APKNAME%.apk} as system app"
-  rm -rf /data/app/${PACKAGENAME}-*
-  rm -rf /data/data/${PACKAGENAME}
-elif [ -d "$MODPATH/system/priv-app/${APKNAME%.apk}" ]; then
-  ui_print "- Installing ${APKNAME%.apk} as system priv-app"
-  rm -rf /data/app/${PACKAGENAME}-*
-  rm -rf /data/data/${PACKAGENAME}
-elif [ -f "$INSTALLER/$APKNAME" ]; then
-  ui_print "- Copying $APKNAME for later installation in data"
-  cp -af $INSTALLER/$APKNAME /data/$APKNAME
-  APKPATH="$PACKAGENAME"-1
-  for i in `ls /data/app | grep "$PACKAGENAME"-`; do
-    if [ `cat /data/system/packages.xml | grep $i >/dev/null 2>&1; echo $?` -eq 0 ]; then
-      APKPATH=$i
-      break;
-    fi
-  done
-  rm -rf /data/app/"$PACKAGENAME"-*
-  ui_print "  target path: /data/app/$APKPATH"
-  mkdir /data/app/$APKPATH
-  chown 1000.1000 /data/app/$APKPATH
-  chmod 0755 /data/app/$APKPATH
-  chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH
-  cp /data/$APKNAME /data/app/$APKPATH/base.apk
-  chown 1000.1000 /data/app/$APKPATH/base.apk
-  chmod 0644 /data/app/$APKPATH/base.apk
-  chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH/base.apk
-  rm /data/$APKNAME  
-else
-  ui_print "- ${APKNAME%.apk} is not included, install it later by yourself"
-fi
+# Install package
+install_package "$APKNAME" "$PACKAGENAME"
 
 # deep_buffer & raw removal in audio_policy.conf for max compatibility
 # setprop in post-fs-data.sh may not work well on some devices.

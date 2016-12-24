@@ -104,6 +104,54 @@ REPLACE="
 "
 
 ##########################################################################################
+# Package installation
+##########################################################################################
+
+install_package() {
+  # Install Android package $APKNAME $PACKAGENAME
+  if [ -f "$MODPATH/system/app/${1%.apk}/$1" ]; then
+    ui_print "- Installing ${1%.apk} as system app"
+    rm -rf /data/app/${2}-*
+    rm -rf /data/data/${2}
+  
+  elif [ -f "$MODPATH/system/priv-app/${1%.apk}/$1" ]; then
+    ui_print "- Installing ${1%.apk} as system priv-app"
+    rm -rf /data/app/${2}-*
+    rm -rf /data/data/${2}
+  
+  elif [ -f "$INSTALLER/$1" ]; then
+    if [ -z `ls /data/app | grep "$2"-` ]; then
+      ui_print "- Installing ${1%.apk} as data app"
+      cp -af $INSTALLER/$1 /data/$1
+      APKPATH="$2"-1
+      for i in `ls /data/app | grep "$2"-`; do
+        if [ `cat /data/system/packages.xml | grep $i >/dev/null 2>&1; echo $?` -eq 0 ]; then
+          APKPATH=$i
+          break;
+        fi
+      done
+      rm -rf /data/app/"$2"-*
+      ui_print "  target path: /data/app/$APKPATH"
+      mkdir /data/app/$APKPATH
+      chown 1000.1000 /data/app/$APKPATH
+      chmod 0755 /data/app/$APKPATH
+      chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH
+      cp /data/$1 /data/app/$APKPATH/base.apk
+      chown 1000.1000 /data/app/$APKPATH/base.apk
+      chmod 0644 /data/app/$APKPATH/base.apk
+      chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH/base.apk
+      rm /data/$1
+    else
+      ui_print "- ${1%.apk} already exists on the device"
+    fi
+  
+  else
+    ui_print "- ${1%.apk} is not included, install it later by yourself"
+    
+  fi
+}
+
+##########################################################################################
 # Permissons
 ##########################################################################################
 
