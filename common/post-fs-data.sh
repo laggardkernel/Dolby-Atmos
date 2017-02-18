@@ -24,11 +24,11 @@ log_print() {
 bind_mount() {
   if [ -e "$1" -a -e "$2" ]; then
     mount -o bind $1 $2
-    if [ "$?" -eq "0" ]; then 
+    if [ "$?" -eq "0" ]; then
       log_print "Mount: $1"
-    else 
+    else
       log_print "Mount Fail: $1"
-    fi 
+    fi
   fi
 }
 
@@ -38,7 +38,7 @@ install_package() {
     cp /cache/$1 /data/$1
     rm /cache/$1
   fi
-  
+
   if [ -f "/data/$1" ]; then
     log_print "installing $1 in /data"
     APKPATH="$2"-1
@@ -109,6 +109,12 @@ if [ -d "${MODDIR}/system/priv-app/Ax" ] || [ -d "${MODDIR}/system/priv-app/AxUI
   log_print "Set SELinux permissive"
   setenforce 0
 else
+  log_print "SELinux Injection"
+  # For Magisk v9
   /data/magisk/sepolicy-inject --live -s mediaserver -t mediaserver_tmpfs -c file -p read,write,execute
   /data/magisk/sepolicy-inject --live -s audioserver -t audioserver_tmpfs -c file -p read,write,execute
+  # Preparation for Magisk v11+ with the new MagiskSU and its sepolicy
+  # /data/magisk/sepolicy-inject --live "allow mediaserver mediaserver_tmpfs file { read write execute }" \
+  # "allow audioserver audioserver_tmpfs file { read write execute }"
+
 fi

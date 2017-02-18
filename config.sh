@@ -2,27 +2,27 @@
 #
 # Magisk
 # by topjohnwu
-# 
+#
 # This is a template zip for developers
 #
 ##########################################################################################
 ##########################################################################################
-# 
+#
 # Instructions:
-# 
+#
 # 1. Place your files into system folder
 # 2. Fill in all sections in this file
 # 3. For advanced features, add commands into the script files under common:
 #    post-fs.sh, post-fs-data.sh, service.sh
 # 4. Change the "module.prop" under common with the info of your module
-# 
+#
 ##########################################################################################
 ##########################################################################################
-# 
+#
 # Limitations:
 # 1. Can not place any new items under /system root!! e.g. /system/newfile, /system/newdir
 #    Magisk will delete these items at boot.
-# 
+#
 ##########################################################################################
 
 ##########################################################################################
@@ -55,15 +55,6 @@ VERSION="v1.0.0"
 REVISION="0.1"
 # APKNAME=*.apk
 # PACKAGENAME=*.*.*
-
-# FILE LOCATIONS
-CONFIG_FILE=/system/etc/audio_effects.conf
-VENDOR_CONFIG=/system/vendor/etc/audio_effects.conf
-HTC_CONFIG_FILE=/system/etc/htc_audio_effects.conf
-OTHER_VENDOR_FILE=/system/etc/audio_effects_vendor.conf
-#OFFLOAD_CONFIG=/system/vendor/etc/audio_effects_offload.conf
-OFFLOAD_CONFIG=/system/vendor/etc/audio_offload_effects.conf
-HTC_VENDOR=/vendor/etc/audio_effects.conf
 
 REMOVAL="
 "
@@ -107,18 +98,19 @@ REPLACE="
 # Package installation
 ##########################################################################################
 
+# custom functions
 install_package() {
   # Install Android package $APKNAME $PACKAGENAME
   if [ -f "$MODPATH/system/app/${1%.apk}/$1" ]; then
     ui_print "- Installing ${1%.apk} as system app"
     rm -rf /data/app/${2}-*
     rm -rf /data/data/${2}
-  
+
   elif [ -f "$MODPATH/system/priv-app/${1%.apk}/$1" ]; then
     ui_print "- Installing ${1%.apk} as system priv-app"
     rm -rf /data/app/${2}-*
     rm -rf /data/data/${2}
-  
+
   elif [ -f "$INSTALLER/$1" ]; then
     if [ -z `ls /data/app | grep "$2"-` ]; then
       ui_print "- Installing ${1%.apk} as data app"
@@ -144,11 +136,20 @@ install_package() {
     else
       ui_print "- ${1%.apk} already exists on the device"
     fi
-  
+
   else
     ui_print "- ${1%.apk} is not included, install it later by yourself"
-    
+
   fi
+}
+
+set_separate_perm_recursive() {
+  find $1 -type d 2>/dev/null | while read dir; do
+    set_perm $dir $2 $3 $6 $8
+  done
+  find $1 -type f 2>/dev/null | while read file; do
+    set_perm $file $4 $5 $7 $9
+  done
 }
 
 ##########################################################################################
@@ -179,16 +180,11 @@ set_permissions() {
     set_perm_recursive  $MODPATH/system/xbin  0  2000  0755  0755
   fi
 
-  if [ -d "$MODPATH/system/vendor/lib" ]; then
-    set_perm_recursive  $MODPATH/system/vendor/lib  0  2000  0755  0644
-  fi
-
-  if [ -d "$MODPATH/system/vendor/lib64" ]; then
-    set_perm_recursive  $MODPATH/system/vendor/lib64  0  2000  0755  0644
-  fi
-
-  if [ -d "$MODPATH/system/vendor/etc" ]; then
-    set_perm_recursive  $MODPATH/system/vendor/etc  0  2000  0755  0644
+  if [ -f "$MODPATH$VEN" ]; then
+    set_separate_perm_recursive $MODPATH$VEN 0 2000 0 0 0755 0644
+    if [ -f "$MODPATH$VEN/bin" ]; then
+      set_perm_recursive $MODPATH$VEN/bin 0 2000 0755 0755
+    fi
   fi
 
   # Only some special files require specific permission settings
