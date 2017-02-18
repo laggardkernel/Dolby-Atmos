@@ -1,3 +1,11 @@
+r1.1:
+    - Further smali hax
+    - Bug fixes
+    - Massive script updates
+    - Newer device compatibility including Pixel & Nexus 6P support
+    - Elaborate restore/backup function
+    - Universal deep_buffer hack included
+
 r1.0
     - Rebuilt from newest 1.8 firmware release
     - Audio post-processing (hifi/dts/dirac) integrated into apks (was omitted from previous builds)

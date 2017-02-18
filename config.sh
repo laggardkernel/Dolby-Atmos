@@ -2,27 +2,27 @@
 #
 # Magisk
 # by topjohnwu
-# 
+#
 # This is a template zip for developers
 #
 ##########################################################################################
 ##########################################################################################
-# 
+#
 # Instructions:
-# 
+#
 # 1. Place your files into system folder
 # 2. Fill in all sections in this file
 # 3. For advanced features, add commands into the script files under common:
 #    post-fs.sh, post-fs-data.sh, service.sh
 # 4. Change the "module.prop" under common with the info of your module
-# 
+#
 ##########################################################################################
 ##########################################################################################
-# 
+#
 # Limitations:
 # 1. Can not place any new items under /system root!! e.g. /system/newfile, /system/newdir
 #    Magisk will delete these items at boot.
-# 
+#
 ##########################################################################################
 
 ##########################################################################################
@@ -53,21 +53,12 @@ tweakname="tweak.prop"
 
 # Custom variables
 VERSION="v2.3.a.12_r0"
-REV="1.0"
+REV="1.1"
 #APP1="Ax"
 #APP2="AxUI"
 #TMPDIR="dax"
 #SYSTEM="system"
 #SYSTEMLESS="systemless"
-
-# FILE LOCATIONS
-CONFIG_FILE=/system/etc/audio_effects.conf
-HTC_CONFIG_FILE=/system/etc/htc_audio_effects.conf
-VENDOR_CONFIG=/system/vendor/etc/audio_effects.conf
-OTHER_VENDOR_FILE=/system/etc/audio_effects_vendor.conf
-#OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
-OFFLOAD_CONFIG=/system/etc/audio_offload_effects.conf
-HTC_VENDOR=/vendor/etc/audio_effects.conf
 
 ##########################################################################################
 # Installation Message
@@ -79,7 +70,7 @@ print_modname() {
   ui_print "*******************************"
   ui_print "  LeEco LeMax 2 Atmos (Magisk) "
   ui_print "           $VERSION            "
-  ui_print "     selinux enforcing fix     "
+  ui_print "*******************************"
   ui_print "        Universal - Mod        "
   ui_print "        Revision $REV          "
   ui_print "          by ahrion            "
@@ -117,12 +108,19 @@ set_permissions() {
   # Default permissions, don't remove them
   set_perm_recursive  $MODPATH  0  0  0755  0644
 
-  if [ -f "$MODPATH/system/bin" ]; then
-    set_perm_recursive  $MODPATH/system/bin  0  2000  0755  0755
+  if [ -f "$MODPATH$SYS/bin" ]; then
+    set_perm_recursive  $MODPATH$SYS/bin  0  2000  0755  0755
   fi
 
-  if [ -f "$MODPATH/system/xbin" ]; then
-    set_perm_recursive  $MODPATH/system/xbin  0  2000  0755  0755
+  if [ -f "$MODPATH$SYS/xbin" ]; then
+    set_perm_recursive  $MODPATH$SYS/xbin  0  2000  0755  0755
+  fi
+
+  if [ -f "$MODPATH$VEN" ]; then
+    set_separate_perm_recursive $MODPATH$VEN 0 2000 0 0 0755 0644
+    if [ -f "$MODPATH$VEN/bin" ]; then
+      set_perm_recursive $MODPATH$VEN/bin 0 2000 0755 0755
+    fi
   fi
 
   # Only some special files require specific permission settings
