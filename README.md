@@ -1,6 +1,6 @@
 **NOTE**: ONLY AVAILABLE FOR MAGISK V9
 
-# LeEco LeMax 2 Atmos
+# LeEco LePro 3 Atmos
 
 ![Dolby Atmos](https://s13.postimg.org/eq742bjv9/Logo_Dolby_Atmos_svg.png?dl=1)
 
@@ -12,7 +12,7 @@ This is the Dolby Atmos ported from LeTv, BQ, and ZTE phone's stock Marshmallow 
 
 I understand the UI looks like the old Dolby Digital Plus, but I can assure you that it is much much better. This Atmos is a much more updated version than ones previously released on the Lenovo K3/K4 Note. The Axon 7 Dolby Atmos utilizes both software and hardware components of your device, which means it processes in a much more powerful manner with much more precision and quality and a more natural soundscape. My Lenovo K4 Atmos and @[worstenbrood](http://forum.xda-developers.com/member.php?u=981278) Lenovo A7000 (6.5) Atmos both utilize solely a software emulation which results in a more artificial sound experience (that is not as good). However with Axon 7 Atmos version, you will see more realistic sound. When you listen to it you will hear the difference immediately in comparison to other versions. The Lepro 3, LeMax 2, and Aquaris X5 Dolby Atmos both only utilize a software effect, however they both sound nearly as good as the Axon 7 Dolby Atmos and are more compatible.
 
-### LeEco LeMax 2 Atmos <v2.3.a.12_r0>
+### LeEco LePro 3 Atmos <v2.3.a.12_r0>
 
 **r1.1**:
 
@@ -23,28 +23,19 @@ I understand the UI looks like the old Dolby Digital Plus, but I can assure you 
 - Elaborate restore/backup function
 - Universal deep_buffer hack included
 
-Download: [Link](https://drive.google.com/file/d/0BxlY-VYiFXU7cFB2cUNjX1JoQU0/view?usp=sharing) - [Mirror](https://www.dropbox.com/s/xu2pulree4yzi0k/dax_aquaris_r0.3_signed.zip?dl=0)
+Download: [Link](https://drive.google.com/file/d/0BxlY-VYiFXU7V3NJdXRpN3hQdGs/view?usp=sharing) - [Mirror](https://www.dropbox.com/s/ymlyuhuu7kbiolu/dax_lepro3_r1.1_signed.zip?dl=0)
 
-#### Previous Changelogs (LeEco LeMax 2):
+#### Previous Changelogs (LeEco LePro 3 Atmos):
 
 **r1.0**:
 
-- Rebuilt from newest 1.8 firmware release
-- Audio post-processing (hifi/dts/dirac) integrated into apks (was omitted from previous builds)
-- Permissions no longer need to be manually turned on with MM+
-- Bug fixes
-
-**r0.2**
-
-- Fixed install script
-
-**r0.1**
-
-- Initial public BETA
 - Changed both app's namespace
 - Changed audio effect UUIDs
 - Merged framework files
 - Backported for support from Jellybean to Android N
+- Smali hax to eliminate force closes
+- Permissions no longer need to be manually turned on with MM+
+- Bug fixes
 
 ### Installation
 

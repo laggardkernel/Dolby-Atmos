@@ -68,7 +68,7 @@ REV="1.1"
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "  LeEco LeMax 2 Atmos (Magisk) "
+  ui_print "  LeEco LePro 3 Atmos (Magisk) "
   ui_print "           $VERSION            "
   ui_print "*******************************"
   ui_print "        Universal - Mod        "

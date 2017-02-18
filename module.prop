@@ -1,9 +1,9 @@
 id=dax
-name=LeEco LeMax 2 Atmos
+name=LeEco LePro 3 Atmos
 version=v2.3.a.12_r0
 versionCode=11
 author=ahrion
-description=LeEco LeMax 2 Atmos ported by ahrion, adapted as Magisk module by laggardkernel
+description=LeEco LePro 3 Atmos ported by ahrion, adapted as Magisk module by laggardkernel
 support=http://forum.xda-developers.com/android/software/soundmod-axon-7-dolby-atmos-t3412342
 donate=http://topjohnwu.github.io/donate
 cacheModule=false

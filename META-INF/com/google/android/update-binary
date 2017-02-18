@@ -402,7 +402,7 @@ for CFG in $MODPATH$CONFIG_FILE $MODPATH$OFFLOAD_CONFIG $MODPATH$OTHER_VENDOR_FI
     # ViPER4Android
     # sed -i '/v4a_fx {/,/}/d' $CFG
     # sed -i '/v4a_standard_fx {/,/}/d' $CFG
-    # LeEco LeMax 2 Atmos
+    # LeEco LeMax 2 Atmos & LeEco LePro 3 Atmos
     # REMOVE EFFECTS
     sed -i 'H;1h;$!d;x; s/[[:blank:]]*dax {[^{}]*\({[^}]*}[^{}]*\)*}[[:blank:]]*\n//g' $CFG
     # REMOVE LIBRARIES
@@ -428,7 +428,7 @@ for CFG in $MODPATH$CONFIG_FILE $MODPATH$OFFLOAD_CONFIG $MODPATH$OTHER_VENDOR_FI
     # ViPER4Android
     #sed -i 's/^libraries {/libraries {\n  v4a_fx {\n    path \/system\/lib\/soundfx\/libv4a_fx_ics.so\n  }/g' $CFG
     #sed -i 's/^effects {/effects {\n  v4a_standard_fx {\n    library v4a_fx\n    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n  }/g' $$CFG
-    # LeEco LeMax 2 Atmos
+    # LeEco LeMax 2 Atmos & LeEco LePro 3 Atmos
     # ADD LIBRARIES
     if [ "$SYS" = "/system/system" ]; then
       sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/system\/lib\/soundfx\/libswdax.so\n  }/g' $CFG

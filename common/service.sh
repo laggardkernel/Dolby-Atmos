@@ -7,8 +7,8 @@ buildname="custom_build.prop"
 RESETPROP="/data/magisk/resetprop"
 
 log_print() {
-  echo "DolbyAtmos: $1"
-  echo "DolbyAtmos: $1" >> $LOGFILE
+  echo "dax: $1"
+  echo "dax: $1" >> $LOGFILE
   log -p i -t DolbyAtmos "$1"
 }
 
