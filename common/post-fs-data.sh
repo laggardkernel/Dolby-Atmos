@@ -8,3 +8,10 @@ MODDIR=${0%/*}
 
 /data/magisk/sepolicy-inject --live -s mediaserver -t mediaserver_tmpfs -c file -p read,write,execute
 /data/magisk/sepolicy-inject --live -s audioserver -t audioserver_tmpfs -c file -p read,write,execute
+
+# Preparation for Magisk v11+ with the new MagiskSU and its sepolicy
+#/data/magisk/sepolicy-inject --live "allow mediaserver mediaserver_tmpfs file { read write execute }" \
+#"allow audioserver audioserver_tmpfs file { read write execute }"
+
+# Ser SELinux Permissive
+# setenforce 0

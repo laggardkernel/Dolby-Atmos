@@ -1,19 +1,136 @@
-R6.5
-    - Fixed permissions
-    - Fixed issue with audio_effects.conf on some devices
-    - Fixed removal of As*
-R6.3
-    - Added permissions in installer script
-R6.2
-    - Patch both /system/etc/audio_effects.conf AND /system/vendor/etc/audio_effects.conf to bypass those badly implemented audio mods that blindly overwrite audio_effects.conf or put an unused audio_effects.conf in /system/vendor/etc.
-R6.1
+Lenovo A7000 (6.5) Atmos <v1.1.4>
+
+r1.0:
+    - Rerelease from Dolby Atmos 6.5 by @worstenbrood (oficially taking over)
+    - Changed audio effect UUIDs from previous version
+    - Changed file names from As/AsUI to Ax/AxUI to match other Atmos versions
+    - Merged framework files
+    - Further smali hax
+    - Permissions no longer need to be manually turned on with MM+
+    - Changed file structures
+    - Massive script updates
+    - Bug fixes
+    - Backported for support from Jellybean to Android N
+    - Newer device compatibility including Pixel & Nexus 6P support
+    - Elaborate restore/backup function
+    - Universal deep_buffer hack included
+
+r1-6.5 (@worstenbrood thread)
+    - Initial release
+    - Fixed compatibility for Android 4.x in Ds.apk and DsUI.apk
+    - Changed uuid and name of the library so it doesnt conflict with other dolby libraries (Ds and DsUI still do but will be overwritten)
+    - Removed demo video, size reduced to 3 mb
     - Renamed namespace
     - Renamed Ds/DsUI to As/AsUI
     - Start from a clean rom (dirty flash) when installing this since it will not cleanup the previous version !
-R5
-    - Removed demo video, size reduced to 3 mb
-R4
-    - Fixed compatibility for Android 4.x in Ds.apk and DsUI.apk
-    - Changed uuid and name of the library so it doesnt conflict with other dolby libraries (Ds and DsUI still do but will be overwritten)
-R1
-    - Initial release
+    - Patch both /system/etc/audio_effects.conf AND /system/vendor/etc/audio_effects.conf to bypass those badly implemented audio mods that blindly overwrite audio_effects.conf or put an unused audio_effects.conf in /system/vendor/etc.
+    - Added permissions in installer script
+    - Fixed permissions
+    - Fixed issue with audio_effects.conf on some devices
+    - Fixed removal of As*
+
+
+LeEco LePro 3 Atmos <v2.3.a.12_r0>
+
+r1.1:
+    - Further smali hax
+    - Bug fixes
+    - Massive script updates
+    - Newer device compatibility including Pixel & Nexus 6P support
+    - Elaborate restore/backup function
+    - Universal deep_buffer hack included
+
+r1.0:
+    - Changed both app's namespace
+    - Changed audio effect UUIDs
+    - Merged framework files
+    - Backported for support from Jellybean to Android N
+    - Smali hax to eliminate force closes
+    - Permissions no longer need to be manually turned on with MM+
+    - Bug fixes
+
+
+LeEco LeMax 2 Atmos <v2.3.a.12_r0>
+
+r1.1:
+    - Further smali hax
+    - Bug fixes
+    - Massive script updates
+    - Newer device compatibility including Pixel & Nexus 6P support
+    - Elaborate restore/backup function
+    - Universal deep_buffer hack included
+
+r1.0:
+    - Rebuilt from newest 1.8 firmware release
+    - Audio post-processing (hifi/dts/dirac) integrated into apks (was omitted from previous builds)
+    - Permissions no longer need to be manually turned on with MM+
+    - Bug fixes
+
+r0.2:
+    - Fixed install script
+
+r0.1
+    - Initial public BETA
+    - Changed both app's namespace
+    - Changed audio effect UUIDs
+    - Merged framework files
+    - Backported for support from Jellybean to Android N
+
+
+BQ Aquaris X5 Atmos <v2.2.1.7_r1>
+
+r1.1:
+    - Further smali hax
+    - Bug fixes
+    - Massive script updates
+    - Newer device compatibility including Pixel & Nexus 6P support
+    - Elaborate restore/backup function
+    - Universal deep_buffer hack included
+
+r0.3:
+    - Initial Public BETA
+    - Permissions no longer need to be manually turned on with MM+
+
+r0.1/0.2
+    - Initial private ALPHA
+    - Changed both app's namespace
+    - Changed audio effect UUIDs
+    - Merged framework files
+    - Backported for support from Jellybean to Android N
+    - Smali hax to eliminate force closes
+
+
+ZTE Axon 7 Atmos <v2.2.1.7_r1>
+
+r1.1:
+    - Further smali hax
+    - Bug fixes
+    - Moved dolby .xml to system rather than vendor
+    - Massive script updates
+    - Newer device compatibility including Pixel & Nexus 6P support
+    - Elaborate restore/backup function
+    - Universal deep_buffer hack included
+
+r0.9.1:
+    - Fixed issue where plugging in headphones would cause all effects to turn off and require manually turning by on (thanks to @yoinx)
+
+r0.8.1:
+    - Fixed "SU.IMG" error during install for users without systemless root
+
+r0.8:
+    - Overhauled install script
+    - Fixed issues where users had to manually place files
+
+r0.7:
+    - Script changes
+    - Smali hax changes
+    - Fixed effects no persisting when exiting on recents swipe or pressing back from the app
+    - Fixed effects not starting on boot
+
+r0.3
+    - Initial public BETA
+    - Changed both app's namespace
+    - Changed audio effect UUIDs
+    - Merged framework files
+    - Backported for support from Jellybean to Android N
+    - Smali hax to eliminate force closes

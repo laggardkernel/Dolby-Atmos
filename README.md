@@ -1,76 +1,93 @@
-# Lenovo K3 Dolby Atmos
+**NOTE**: ONLY AVAILABLE FOR MAGISK V9
+
+# Lenovo A7000 (6.5) Atmos
 
 ![Dolby Atmos](https://s13.postimg.org/eq742bjv9/Logo_Dolby_Atmos_svg.png?dl=1)
 
-**Disclaim: This is a personal experiment on Magisk, adapted from ahrion's Collective Dolby Atmos Port Thread [MM+]. No interest for distribution**
+**Disclaimer: This is a personal experiment on Magisk, adapted from ahrion's Collective Dolby Atmos Port Thread [JB-N+][MAJOR UPDATE: 02/12/2017]. No interest for distribution**
 
 ### Intro
 
-This is the Dolby Atmos sound effect ported from a Lenovo rom. This should work on all devices (starting from Android 4.3) since it is a software effect. It might conflict with other dolby effects you already installed. Flash the zip, it will edit (not overwrite) your audio_effects.conf.
+This is the Dolby Atmos ported from LeTv, BQ, and ZTE phone's stock Marshmallow ROM. This should work on all devices (starting from Marshmallow) since it is a software effect. It might conflict with other effects you've already installed. However, it has been extensively tested working alongside ViPER4Android, Maxxaudio, and HTC M9/10 Dolby on several ROM/device combinations. Flash the zip, it will edit and patch (not overwrite) your audio_effects.conf. Currently selinux permissive is recommended.
 
-### BQ Aquaris X5 Atmos <v1.1.4>
+I understand the UI looks like the old Dolby Digital Plus, but I can assure you that it is much much better. This Atmos is a much more updated version than ones previously released on the Lenovo K3/K4 Note. The Axon 7 Dolby Atmos utilizes both software and hardware components of your device, which means it processes in a much more powerful manner with much more precision and quality and a more natural soundscape. My Lenovo K4 Atmos and @[worstenbrood](http://forum.xda-developers.com/member.php?u=981278) Lenovo A7000 (6.5) Atmos both utilize solely a software emulation which results in a more artificial sound experience (that is not as good). However with Axon 7 Atmos version, you will see more realistic sound. When you listen to it you will hear the difference immediately in comparison to other versions. The Lepro 3, LeMax 2, and Aquaris X5 Dolby Atmos both only utilize a software effect, however they both sound nearly as good as the Axon 7 Dolby Atmos and are more compatible.
 
-##### Download
+### Lenovo A7000 (6.5) Atmos <v1.1.4>
 
-- Download: [R6.5](http://forum.xda-developers.com/devdb/project/dl/?id=13100)
-- Download: [R6.5.1 uninstall](http://forum.xda-developers.com/devdb/project/dl/?id=13553)
-- deep_buffer remover: [Download](http://forum.xda-developers.com/devdb/project/dl/?id=13950)
+**r1.0**:
 
-**r6.5**:
+- Rerelease from Dolby Atmos 6.5 by @worstenbrood (oficially taking over)
+- Changed audio effect UUIDs from previous version
+- Changed file names from As/AsUI to Ax/AxUI to match other Atmos versions
+- Merged framework files
+- Further smali hax
+- Permissions no longer need to be manually turned on with MM+
+- Changed file structures
+- Massive script updates
+- Bug fixes
+- Backported for support from Jellybean to Android N
+- Newer device compatibility including Pixel & Nexus 6P support
+- Elaborate restore/backup function
+- Universal deep_buffer hack included
 
+#### Previous Changelogs (Lenovo A7000 (6.5) Atmos):
+
+**r1-6.5** (@worstenbrood thread)
+
+- Initial release
+- Fixed compatibility for Android 4.x in Ds.apk and DsUI.apk
+- Changed uuid and name of the library so it doesnt conflict with other dolby libraries (Ds and DsUI still do but will be overwritten)
+- Removed demo video, size reduced to 3 mb
+- Renamed namespace
+- Renamed Ds/DsUI to As/AsUI
+- Start from a clean rom (dirty flash) when installing this since it will not cleanup the previous version !
+- Patch both /system/etc/audio_effects.conf AND /system/vendor/etc/audio_effects.conf to bypass those badly implemented audio mods that blindly overwrite audio_effects.conf or put an unused audio_effects.conf in /system/vendor/etc.
+- Added permissions in installer script
 - Fixed permissions
 - Fixed issue with audio_effects.conf on some devices
 - Fixed removal of As*
 
-##### Previous Changelogs (Lenovo K3 Dolby Atmos):
+### Installation
 
-**R6.3**
+When you've chosen the one you're going to use, download and flash the installer provided above. TWRP is recommended, but I'm sure CM Recovery, Philz, and CWM work just fine. Flashfire is tested as working. Each Dobly Atmos above comes from different devices AND manufacturers. To find which Atmos works properly for you, make sure you are Selinux Permissive. Flash LePro 3 version if and if that does not work flash LeMax 2 version. If it does not work then flash BQ Aquaris version third. If that one doesn't work flash Axon version last. If Axon version does not work then I'm sorry, provide a log as I am looking in to fixes. You should be able to flash on top of one another without causing any issues.
 
-- Added permissions in installer script
+### Uninstall
 
-**R6.2**
+Download and flash the uninstaller provided above. TWRP is recommended, but I'm sure CM Recovery, Philz, and CWM work just fine. Flashfire is tested as working.
 
-- Patch both /system/etc/audio_effects.conf AND /system/vendor/etc/audio_effects.conf to bypass those badly implemented audio mods that blindly overwrite audio_effects.conf or put an unused audio_effects.conf in /system/vendor/etc.
+![Dolby Atmos app Interface](https://img.xda-cdn.com/SNOpo8COXcCngH3Ch61PdGfAfKg=/https%3A%2F%2Fs32.postimg.org%2Fyo3au3o5h%2FScreenshot_20160710_160615.png)
 
-**R6.1**
+Credits of Originality by [ahrion](http://forum.xda-developers.com/member.php?u=5357345):
 
-- Renamed namespace
-- Renamed Ds/DsUI to As/AsUI
-- Start from a clean rom (dirty flash) when installing this since it will not cleanup the previous version !
+- Dolby
+- BQ
+- LeEco (LeTv)
+- ZTE
+- Lenovo
+- I ported the app myself([ahrion](http://forum.xda-developers.com/member.php?u=5357345)) and made the changes necessary for it to work without FC on most devices
 
-**R5**
-
-- Removed demo video, size reduced to 3 mb
-
-**R4**
-
-- Fixed compatibility for Android 4.x in Ds.apk and DsUI.apk
-- Changed uuid and name of the library so it doesnt conflict with other dolby libraries (Ds and DsUI still do but will be overwritten)
-
-**R1**
-
-- Initial release
-
-![Dolby Atmos app Interface 1](http://forum.xda-developers.com/attachment.php?attachmentid=3314480&d=1431711136) ![Dolby Atmos app Interface 1](http://forum.xda-developers.com/attachment.php?attachmentid=3317806&d=1431888014)
-
+**WARNING: Permission to use this for your own mod is and will never be granted to anyone with the exception being A.R.I.S.E. If you would like to use my files for your ROM, and only your ROM, please contact me to obtain permission before doing so. By not adhering to my strict policies, you are in violation and the issue will be forwarded promptly to a moderator. You can thank kangers.**
 
 #### XDA:DevDB Information
 
-**Dolby ATMOS, App for all devices (see above for details)**
+**Collective Dolby Atmos Port Thread, ROM for all devices (see above for details)**
 
 ##### Contributors
 
-[worstenbrood](http://forum.xda-developers.com/member.php?u=981278), [ahrion](http://forum.xda-developers.com/member.php?u=5357345), [aki_007](http://forum.xda-developers.com/member.php?u=5648292)
+ahrion, @Yoinx (helping hax headphone smali bug)
+```
+ROM OS Version: 7.x Nougat
+ROM Firmware Required: 4.1+
+```
 
 ##### Version Information
 
 ```
 Status: Stable
-Current Stable Version: R6.5
-Stable Release Date: 2015-06-20
+Stable Release Date: 2017-02-12
 
-Created 2015-05-15
-Last Updated 2016-10-05
+Created 2016-07-07
+Last Updated 2017-02-12
 ```
 
 ### Magisk Port Features
@@ -81,9 +98,12 @@ Last Updated 2016-10-05
 
 ### Support Link
 
-- [[MOD][ARM][4.3+] Dolby ATMOS](http://forum.xda-developers.com/android/apps-games/mod-dolby-atmos-t3109446)
+- [Collective Dolby Atmos Port Thread [JB-N+][MAJOR UPDATE: 02/12/2017]](http://forum.xda-developers.com/android/software/soundmod-axon-7-dolby-atmos-t3412342)
+- [Magisk - Root & Universal Systemless Interface [Android 5.0+]](https://forum.xda-developers.com/apps/magisk/official-magisk-v7-universal-systemless-t3473445)
 
 ### Credit
-- Orignially ported by [worstenbrood@XDA](http://forum.xda-developers.com/member.php?u=981278)
-- [ahrion](http://forum.xda-developers.com/member.php?u=5357345) and [aki_007](http://forum.xda-developers.com/member.php?u=5648292) for supplying the rom
+- Orignially ported by [ahrion@XDA](http://forum.xda-developers.com/member.php?u=5357345)
+- Magisk by [topjohnwu@XDA](https://forum.xda-developers.com/member.php?u=4470081)
 - Magisk module by [laggardkernel@Github](https://github.com/laggardkernel)
+
+
