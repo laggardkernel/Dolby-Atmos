@@ -7,7 +7,7 @@
 ui_print() {
   if ($BOOTMODE); then
     echo "$1"
-  else 
+  else
     echo -n -e "ui_print $1\n" >> /proc/self/fd/$OUTFD
     echo -n -e "ui_print\n" >> /proc/self/fd/$OUTFD
   fi
@@ -110,6 +110,16 @@ target_size_check() {
   curFreeM=$((curSizeM - curUsedM));
 }
 
+# custom functions
+set_separate_perm_recursive() {
+  find $1 -type d 2>/dev/null | while read dir; do
+    set_perm $dir $2 $3 $6 $8
+  done
+  find $1 -type f 2>/dev/null | while read file; do
+    set_perm $file $4 $5 $7 $9
+  done
+}
+
 ##########################################################################################
 # Flashable update-binary preparation
 ##########################################################################################
@@ -199,6 +209,52 @@ if [ ! -f '/system/build.prop' ]; then
   exit 1
 fi
 
+# FILE LOCATIONS
+
+if [ -d "/system/system" ]; then
+  SYS=/system/system
+else
+  SYS=/system
+fi
+
+if [ ! -d "$SYS/vendor" ] || [ -L "$SYS/vendor" ]; then
+  VEN=/vendor
+elif [ -d "$SYS/vendor" ] || [ -L "/vendor" ]; then
+  VEN=$SYS/vendor
+fi
+
+if [ -e "$VEN/build.prop" ] && [ ! -e "$SYS/build.prop" ]; then
+  BP=$VEN/build.prop
+elif [ -e "$SYS/build.prop" ] && [ ! -e "$VEN/build.prop" ]; then
+  BP=$SYS/build.prop
+elif [ -e "$SYS/build.prop" ] && [ -e "$VEN/build.prop" ]; then
+  if [ $(wc -c < "$SYS/build.prop") -ge $(wc -c < "$VEN/build.prop") ]; then
+    BP=$SYS/build.prop
+  else
+    BP=$VEN/build.prop
+  fi
+fi
+
+if [ -d "/sdcard0" ]; then
+  SDCARD=/sdcard0
+elif [ -d "/sdcard/0" ]; then
+  SDCARD=/sdcard/0
+else
+  SDCARD=/sdcard
+fi
+
+CONFIG_FILE=$SYS/etc/audio_effects.conf
+#OFFLOAD_CONFIG=$SYS/etc/audio_effects_offload.conf
+OFFLOAD_CONFIG=/system/etc/audio_offload_effects.conf
+OTHER_VENDOR_FILE=$SYS/etc/audio_effects_vendor.conf
+HTC_CONFIG_FILE=$SYS/etc/htc_audio_effects.conf
+VENDOR_CONFIG=$VEN/etc/audio_effects.conf
+
+AUD_POL=$SYS/etc/audio_policy.conf
+AUD_POL_CONF=$SYS/etc/audio_policy_configuration.xml
+AUD_OUT_POL=$VEN/etc/audio_output_policy.conf
+V_AUD_POL=$VEN/etc/audio_policy.conf
+
 API=$(grep_prop ro.build.version.sdk)
 ABI=$(grep_prop ro.product.cpu.abi | cut -c-3)
 ABI2=$(grep_prop ro.product.cpu.abi2 | cut -c-3)
@@ -216,9 +272,9 @@ if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; IS64BIT=true; fi;
 # ro.build.product is obsolete; use ro.product.device
 # ro.build.product=OnePlus3
 # ro.product.device=OnePlus3
-PRODUCT=$(cat /system/build.prop | grep "ro.product.device=")
+PRODUCT=$(cat $BP | grep "ro.product.device=")
 if [ "$PRODUCT" = "" ]; then
-  PRODUCT=$(cat /system/build.prop | grep "ro.build.product=")
+  PRODUCT=$(cat $BP | grep "ro.build.product=")
   PRODUCT=${PRODUCT:17}
 else
   PRODUCT=${PRODUCT:18}
@@ -279,218 +335,132 @@ if (! is_mounted $MOUNTPATH); then
 fi
 
 # Create mod paths
-ui_print "- Cleaning conflicting installations"
-rm -rf /data/app/com.atmos-*
-rm -rf /data/data/com.atmos
-rm -rf /data/app/com.atmos.daxappUI-*
-rm -rf /data/data/com.atmos.daxappUI
+# empty folders will be deleted by magisk_mount.sh during boot
 rm -rf $MODPATH
-#mkdir -p $MODPATH/system
-mkdir -p $MODPATH/system/vendor/etc
+mkdir -p $MODPATH$SYS
+mkdir -p $MODPATH$VEN/etc
 
+<<COMMENT_N_PREVENTION
 # Determine Android N
 ui_print "- Determining Android version"
 if [ "$API" -ge "24" ];
   then
     ui_print "  Android N detected"
     ui_print "  Preventing safe mode for su.d scripts"
-    mkdir -p $MODPATH/system/bin 2>/dev/null
-    echo 0 > $MODPATH/system/bin/logd
+    mkdir -p $MODPATH$SYS/bin 2>/dev/null
+    echo 0 > $MODPATH$SYS/bin/logd
 fi
+COMMENT_N_PREVENTION
 
 # Copy files
 ui_print "- Copying files"
-cp -af $INSTALLER/system/* $MODPATH/system
+cp -af $INSTALLER/system/* $MODPATH$SYS
+cp -af $INSTALLER/vendor/* $MODPATH$VEN 2>/dev/null
 if (! $IS64BIT); then
-  rm -rf $MODPATH/system/lib64 2>/dev/null
-  rm -rf $MODPATH/system/vendor/lib64 2>/dev/null
+  rm -rf $MODPATH$SYS/lib64 2>/dev/null
+  rm -rf $MODPATH$VEN/lib64 2>/dev/null
 fi
 
-cp -af $CONFIG_FILE $MODPATH$CONFIG_FILE 2>/dev/null
-cp -af $HTC_CONFIG_FILE $MODPATH$HTC_CONFIG_FILE 2>/dev/null
+ui_print "  Copying audio_effects confs from system"
+for CFG in $CONFIG_FILE $OFFLOAD_CONFIG $OTHER_VENDOR_FILE $HTC_CONFIG_FILE $VENDOR_CONFIG; do
+  if [ -f $CFG ]; then
+    ui_print "    $CFG"
+    # Copying audio_effects confs
+    cp -af $CFG $MODPATH$CFG 2>/dev/null
+  fi
+done
+
+#cp -af $CONFIG_FILE $MODPATH$CONFIG_FILE 2>/dev/null
+#cp -af $OFFLOAD_CONFIG $MODPATH$OFFLOAD_CONFIG 2>/dev/null
+#cp -af $HTC_CONFIG_FILE $MODPATH$HTC_CONFIG_FILE 2>/dev/null
+#cp -af $OTHER_VENDOR_FILE $MODPATH$OTHER_VENDOR_FILE 2>/dev/null
 #cp -af $VENDOR_CONFIG $MODPATH$VENDOR_CONFIG 2>/dev/null
-cp -af $OTHER_VENDOR_FILE $MODPATH$OTHER_VENDOR_FILE 2>/dev/null
-cp -af $OFFLOAD_CONFIG $MODPATH$OFFLOAD_CONFIG 2>/dev/null
 
 # Specific fix for OnePlus3 ROMs on /system/vendor/etc/audio_effects.conf
 if [ "$PRODUCT" = "OnePlus3" ] || [ "$PRODUCT" = "oneplus3" ]; then
-  ui_print "  Fixing audio_effects for OnePlus3 ROMs"
+  ui_print "  Fixing audio_effects vendor file for OnePlus3"
+  ui_print "    Overwriting $MODPATH$VENDOR_CONFIG with $CONFIG_FILE"
   cp -af $CONFIG_FILE $MODPATH$VENDOR_CONFIG 2>/dev/null
 else
   cp -af $VENDOR_CONFIG $MODPATH$VENDOR_CONFIG 2>/dev/null
 fi
 
+ui_print "- Copying audio_policy confs from system"
+for CFG in $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+  if [ -f $CFG ]; then
+    ui_print "    $CFG"
+    # Copying audio_policy confs
+    cp -af $CFG $MODPATH$CFG 2>/dev/null
+  fi
+done
+
+# Remove libraries and effects
+ui_print "- Removing library and effect lines"
+for CFG in $MODPATH$CONFIG_FILE $MODPATH$OFFLOAD_CONFIG $MODPATH$OTHER_VENDOR_FILE $MODPATH$HTC_CONFIG_FILE $MODPATH$VENDOR_CONFIG; do
+  if [ -f $CFG ]; then
+    ui_print "    $CFG"
+    # ViPER4Android
+    # sed -i '/v4a_fx {/,/}/d' $CFG
+    # sed -i '/v4a_standard_fx {/,/}/d' $CFG
+    # LeEco LeMax 2, LeEco LePro 3 & BQ Aquaris X5 Atmos
+    # REMOVE EFFECTS
+    sed -i 'H;1h;$!d;x; s/[[:blank:]]*dax {[^{}]*\({[^}]*}[^{}]*\)*}[[:blank:]]*\n//g' $CFG
+    # REMOVE LIBRARIES
+    sed -i '/dap {/,/}/d' $CFG
+    sed -i '/dax {/,/}/d' $CFG
+    sed -i '/dax_sw {/,/}/d' $CFG
+    sed -i '/dax_hw {/,/}/d' $CFG
+    if [ "$PRODUCT" = "OnePlus3" ] || [ "$PRODUCT" = "oneplus3" ]; then
+      sed -i '/ds_sw {/,/}/d' $CFG
+      sed -i '/ds_hw {/,/}/d' $CFG
+      sed -i '/DOLBY_DAP/,/DOLBY_END/d' $CFG
+    fi
+  fi
+done
+
+ui_print "- Patching necessary cfg files"
+
 # Add libraries and effects
-ui_print "- Adding libs and effects"
-if [ -f "$MODPATH$CONFIG_FILE" ]; then
-  # ViPER4Android
-  #sed -i '/v4a_fx {/,/}/d' $MODPATH$CONFIG_FILE
-  #sed -i '/v4a_standard_fx {/,/}/d' $MODPATH$CONFIG_FILE
-  #sed -i 's/^libraries {/libraries {\n  v4a_fx {\n    path \/system\/lib\/soundfx\/libv4a_fx_ics.so\n  }/g' $MODPATH$CONFIG_FILE
-  #sed -i 's/^effects {/effects {\n  v4a_standard_fx {\n    library v4a_fx\n    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n  }/g' $MODPATH$CONFIG_FILE
-  # LeEco LeMax 2 Atmos & BQ Aquaris X5
-  sed -i 'H;1h;$!d;x; s/[[:blank:]]*dax {[^{}]*\({[^}]*}[^{}]*\)*}[[:blank:]]*\n//g' $MODPATH$CONFIG_FILE
-  sed -i '/dax {/,/}/d' $MODPATH$CONFIG_FILE
-  sed -i '/dax_sw {/,/}/d' $MODPATH$CONFIG_FILE
-  sed -i '/dax_hw {/,/}/d' $MODPATH$CONFIG_FILE
-  if [ "$PRODUCT" = "OnePlus3" ] || [ "$PRODUCT" = "oneplus3" ]; then
-    sed -i '/ds_sw {/,/}/d' $MODPATH$CONFIG_FILE
-    sed -i '/ds_hw {/,/}/d' $MODPATH$CONFIG_FILE
-    sed -i '/DOLBY_DAP/,/DOLBY_END/d' $MODPATH$CONFIG_FILE
+ui_print "  Patching existing audio_effects files"
+for CFG in $MODPATH$CONFIG_FILE $MODPATH$OFFLOAD_CONFIG $MODPATH$OTHER_VENDOR_FILE $MODPATH$HTC_CONFIG_FILE $MODPATH$VENDOR_CONFIG; do
+  if [ -f $CFG ]; then
+    ui_print "    $CFG"
+    # ViPER4Android
+    #sed -i 's/^libraries {/libraries {\n  v4a_fx {\n    path \/system\/lib\/soundfx\/libv4a_fx_ics.so\n  }/g' $CFG
+    #sed -i 's/^effects {/effects {\n  v4a_standard_fx {\n    library v4a_fx\n    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n  }/g' $$CFG
+    # LeEco LeMax 2, LeEco LePro 3 & BQ Aquaris X5 Atmos
+    # ADD LIBRARIES
+    if [ "$SYS" = "/system/system" ]; then
+      sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/system\/lib\/soundfx\/libswdax.so\n  }/g' $CFG
+    elif [ "$SYS" = "/system" ]; then
+      sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $CFG
+    else
+      ui_print '    IMPOSSIBLE $SYS VALUE'
+      exit 1
+    fi
+    # ADD EFFECTS
+    sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $CFG
   fi
-  #sed -i '/ds {/,/}/d' $MODPATH$CONFIG_FILE
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$CONFIG_FILE
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$CONFIG_FILE
-  # Lenovo K3 Dolby ATMOS
-  #sed -i '/dap {/,/}/d' $MODPATH$CONFIG_FILE
-  #sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$CONFIG_FILE
-  #sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$CONFIG_FILE
-  # ZTE Axon 7 Atmos
-  #sed -i 's/^libraries {/libraries {\n  dax_sw {\n    path \/system\/vendor\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$CONFIG_FILE
-  #sed -i 's/^libraries {/libraries {\n  dax_hw {\n    path \/system\/vendor\/lib\/soundfx\/libhwdax.so\n  }/g' $MODPATH$CONFIG_FILE
-  #sed -i 's/^effects {/effects {\n  dax {\n    library proxy\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n\n    libsw {\n      library dax_sw\n      uuid 6ab06da4-c516-4611-8166-6168726e6f69\n    }\n\n    libhw {\n      library dax_hw\n      uuid a0c30891-8246-4aef-b8ad-696f6e726861\n    }\n  }/g' $MODPATH$CONFIG_FILE
-fi
-
-if [ -f "$MODPATH$VENDOR_CONFIG" ]; then
-  # ViPER4Android
-  #sed -i '/v4a_fx {/,/}/d' $MODPATH$VENDOR_CONFIG
-  #sed -i '/v4a_standard_fx {/,/}/d' $MODPATH$VENDOR_CONFIG
-  #sed -i 's/^libraries {/libraries {\n  v4a_fx {\n    path \/system\/lib\/soundfx\/libv4a_fx_ics.so\n  }/g' $MODPATH$VENDOR_CONFIG
-  #sed -i 's/^effects {/effects {\n  v4a_standard_fx {\n    library v4a_fx\n    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n  }/g' $MODPATH$VENDOR_CONFIG
-  # LeEco LeMax 2 Atmos & BQ Aquaris X5
-  sed -i 'H;1h;$!d;x; s/[[:blank:]]*dax {[^{}]*\({[^}]*}[^{}]*\)*}[[:blank:]]*\n//g' $MODPATH$VENDOR_CONFIG
-  sed -i '/dax {/,/}/d' $MODPATH$VENDOR_CONFIG
-  sed -i '/dax_sw {/,/}/d' $MODPATH$VENDOR_CONFIG
-  sed -i '/dax_hw {/,/}/d' $MODPATH$VENDOR_CONFIG
-  if [ "$PRODUCT" = "OnePlus3" ] || [ "$PRODUCT" = "oneplus3" ]; then
-    sed -i '/ds_sw {/,/}/d' $MODPATH$VENDOR_CONFIG
-    sed -i '/ds_hw {/,/}/d' $MODPATH$VENDOR_CONFIG
-    sed -i '/DOLBY_DAP/,/DOLBY_END/d' $MODPATH$VENDOR_CONFIG
-  fi
-  #sed -i '/ds {/,/}/d' $MODPATH$VENDOR_CONFIG
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$VENDOR_CONFIG
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$VENDOR_CONFIG
-  # Lenovo K3 Dolby ATMOS
-  #sed -i '/dap {/,/}/d' $MODPATH$VENDOR_CONFIG
-  #sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$VENDOR_CONFIG
-  #sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$VENDOR_CONFIG
-  # ZTE Axon 7 Atmos
-  #sed -i 's/^libraries {/libraries {\n  dax_sw {\n    path \/system\/vendor\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$VENDOR_CONFIG
-  #sed -i 's/^libraries {/libraries {\n  dax_hw {\n    path \/system\/vendor\/lib\/soundfx\/libhwdax.so\n  }/g' $MODPATH$VENDOR_CONFIG
-  #sed -i 's/^effects {/effects {\n  dax {\n    library proxy\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n\n    libsw {\n      library dax_sw\n      uuid 6ab06da4-c516-4611-8166-6168726e6f69\n    }\n\n    libhw {\n      library dax_hw\n      uuid a0c30891-8246-4aef-b8ad-696f6e726861\n    }\n  }/g' $MODPATH$VENDOR_CONFIG
-fi
-
-if [ -f "$MODPATH$HTC_CONFIG_FILE" ]; then
-  # ViPER4Android
-  #sed -i '/v4a_fx {/,/}/d' $MODPATH$HTC_CONFIG_FILE
-  #sed -i '/v4a_standard_fx {/,/}/d' $MODPATH$HTC_CONFIG_FILE
-  #sed -i 's/^libraries {/libraries {\n  v4a_fx {\n    path \/system\/lib\/soundfx\/libv4a_fx_ics.so\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  #sed -i 's/^effects {/effects {\n  v4a_standard_fx {\n    library v4a_fx\n    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  # LeEco LeMax 2 Atmos & BQ Aquaris X5
-  sed -i 'H;1h;$!d;x; s/[[:blank:]]*dax {[^{}]*\({[^}]*}[^{}]*\)*}[[:blank:]]*\n//g' $MODPATH$HTC_CONFIG_FILE
-  sed -i '/dax {/,/}/d' $MODPATH$HTC_CONFIG_FILE
-  sed -i '/dax_sw {/,/}/d' $MODPATH$HTC_CONFIG_FILE
-  sed -i '/dax_hw {/,/}/d' $MODPATH$HTC_CONFIG_FILE
-  #sed -i '/ds {/,/}/d' $MODPATH$HTC_CONFIG_FILE
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  # Lenovo K3 Dolby ATMOS
-  #sed -i '/dap {/,/}/d' $MODPATH$HTC_CONFIG_FILE
-  #sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  #sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  # ZTE Axon 7 Atmos
-  #sed -i 's/^libraries {/libraries {\n  dax_sw {\n    path \/system\/vendor\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  #sed -i 's/^libraries {/libraries {\n  dax_hw {\n    path \/system\/vendor\/lib\/soundfx\/libhwdax.so\n  }/g' $MODPATH$HTC_CONFIG_FILE
-  #sed -i 's/^effects {/effects {\n  dax {\n    library proxy\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n\n    libsw {\n      library dax_sw\n      uuid 6ab06da4-c516-4611-8166-6168726e6f69\n    }\n\n    libhw {\n      library dax_hw\n      uuid a0c30891-8246-4aef-b8ad-696f6e726861\n    }\n  }/g' $MODPATH$HTC_CONFIG_FILE
-fi
-
-if [ -f "$MODPATH$OTHER_VENDOR_FILE" ]; then
-  # ViPER4Android
-  #sed -i '/v4a_fx {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
-  #sed -i '/v4a_standard_fx {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
-  #sed -i 's/^libraries {/libraries {\n  v4a_fx {\n    path \/system\/lib\/soundfx\/libv4a_fx_ics.so\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  #sed -i 's/^effects {/effects {\n  v4a_standard_fx {\n    library v4a_fx\n    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  # LeEco LeMax 2 Atmos & BQ Aquaris X5
-  sed -i 'H;1h;$!d;x; s/[[:blank:]]*dax {[^{}]*\({[^}]*}[^{}]*\)*}[[:blank:]]*\n//g' $MODPATH$OTHER_VENDOR_FILE
-  sed -i '/dax {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
-  sed -i '/dax_sw {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
-  sed -i '/dax_hw {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
-  #sed -i '/ds {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  # Lenovo K3 Dolby ATMOS
-  #sed -i '/dap {/,/}/d' $MODPATH$OTHER_VENDOR_FILE
-  #sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  #sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  # ZTE Axon 7 Atmos
-  #sed -i 's/^libraries {/libraries {\n  dax_sw {\n    path \/system\/vendor\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  #sed -i 's/^libraries {/libraries {\n  dax_hw {\n    path \/system\/vendor\/lib\/soundfx\/libhwdax.so\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-  #sed -i 's/^effects {/effects {\n  dax {\n    library proxy\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n\n    libsw {\n      library dax_sw\n      uuid 6ab06da4-c516-4611-8166-6168726e6f69\n    }\n\n    libhw {\n      library dax_hw\n      uuid a0c30891-8246-4aef-b8ad-696f6e726861\n    }\n  }/g' $MODPATH$OTHER_VENDOR_FILE
-fi
-
-if [ -f "$MODPATH$OFFLOAD_CONFIG" ]; then
-  # ViPER4Android
-  #sed -i '/v4a_fx {/,/}/d' $MODPATH$OFFLOAD_CONFIG
-  #sed -i '/v4a_standard_fx {/,/}/d' $MODPATH$OFFLOAD_CONFIG
-  #sed -i 's/^libraries {/libraries {\n  v4a_fx {\n    path \/system\/lib\/soundfx\/libv4a_fx_ics.so\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  #sed -i 's/^effects {/effects {\n  v4a_standard_fx {\n    library v4a_fx\n    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  # LeEco LeMax 2 Atmos & BQ Aquaris X5
-  sed -i 'H;1h;$!d;x; s/[[:blank:]]*dax {[^{}]*\({[^}]*}[^{}]*\)*}[[:blank:]]*\n//g' $MODPATH$OFFLOAD_CONFIG
-  sed -i '/dax {/,/}/d' $MODPATH$OFFLOAD_CONFIG
-  sed -i '/dax_sw {/,/}/d' $MODPATH$OFFLOAD_CONFIG
-  sed -i '/dax_hw {/,/}/d' $MODPATH$OFFLOAD_CONFIG
-  #sed -i '/ds {/,/}/d' $MODPATH$OFFLOAD_CONFIG
-  sed -i 's/^libraries {/libraries {\n  dax {\n    path \/system\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  sed -i 's/^effects {/effects {\n  dax {\n    library dax\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  # Lenovo K3 Dolby ATMOS
-  #sed -i '/dap {/,/}/d' $MODPATH$OFFLOAD_CONFIG
-  #sed -i 's/^libraries {/libraries {\n  dap {\n    path \/system\/lib\/soundfx\/libswdap-mod.so\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  #sed -i 's/^effects {/effects {\n  dap {\n    library dap\n    uuid 9d4921da-8225-4f29-aefa-39537a041337\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  # ZTE Axon 7 Atmos
-  #sed -i 's/^libraries {/libraries {\n  dax_sw {\n    path \/system\/vendor\/lib\/soundfx\/libswdax.so\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  #sed -i 's/^libraries {/libraries {\n  dax_hw {\n    path \/system\/vendor\/lib\/soundfx\/libhwdax.so\n  }/g' $MODPATH$OFFLOAD_CONFIG
-  #sed -i 's/^effects {/effects {\n  dax {\n    library proxy\n    uuid 9d4921da-8225-4f29-aefa-6e6f69726861\n\n    libsw {\n      library dax_sw\n      uuid 6ab06da4-c516-4611-8166-6168726e6f69\n    }\n\n    libhw {\n      library dax_hw\n      uuid a0c30891-8246-4aef-b8ad-696f6e726861\n    }\n  }/g' $MODPATH$OFFLOAD_CONFIG
-fi
-
-<<COMMENT_HTC_VENDOR
-if [ -f "$HTC_VENDOR" ]; then
-  mkdir -p $MODPATH/vendor/etc
-  cp -af $HTC_VENDOR $MODPATH$HTC_VENDOR
-  sed -i '/v4a_fx {/,/}/d' $MODPATH$HTC_VENDOR
-  sed -i '/v4a_standard_fx {/,/}/d' $MODPATH$HTC_VENDOR
-  sed -i 's/^libraries {/libraries {\n  v4a_fx {\n    path \/system\/lib\/soundfx\/libv4a_fx_ics.so\n  }/g' $MODPATH$HTC_VENDOR
-  sed -i 's/^effects {/effects {\n  v4a_standard_fx {\n    library v4a_fx\n    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n  }/g' $MODPATH$HTC_VENDOR
-fi
-COMMENT_HTC_VENDOR
+done
 
 # deep_buffer & raw removal in audio_policy.conf for max compatibility
 # setprop in post-fs-data.sh may not work well on some devices.
-ui_print "- Removing deep_buffer & raw for max compatibility"
-if [ -f "/system/etc/audio_policy.conf" ]; then
-  cp -af /system/etc/audio_policy.conf $MODPATH/system/etc/audio_policy.conf
-  sed -i '/deep_buffer {/,/}/d' $MODPATH/system/etc/audio_policy.conf
-  sed -i '/raw {/,/}/d' $MODPATH/system/etc/audio_policy.conf
-fi
+ui_print "  Patching existing audio_policy files"
 
-if [ -f "/system/vendor/etc/audio_policy.conf" ]; then
-  cp -af /system/vendor/etc/audio_policy.conf $MODPATH/system/vendor/etc/audio_policy.conf
-  sed -i '/deep_buffer {/,/}/d' $MODPATH/system/vendor/etc/audio_policy.conf
-  sed -i '/raw {/,/}/d' $MODPATH/system/vendor/etc/audio_policy.conf
+if [ -f $MODPATH$AUD_OUT_POL ] && [ -f $MODPATH$AUD_POL_CONF ]; then
+  # REMOVE DEEP_BUFFER
+  ui_print "    $MODPATH$AUD_POL_CONF"
+  sed -i '/Speaker/{n;s/deep_buffer,//;}' $MODPATH$AUD_POL_CONF
+else
+  for CFG in $MODPATH$AUD_POL $MODPATH$AUD_POL_CONF $MODPATH$AUD_OUT_POL $MODPATH$V_AUD_POL; do
+    if [ -f $CFG ]; then
+      # REMOVE DEEP_BUFFER
+      ui_print "    $CFG"
+      sed -i '/deep_buffer {/,/}/d' $CFG
+      #sed -i '/raw {/,/}/d' $CFG
+    fi
+  done
 fi
-
-if [ -f "/system/vendor/etc/audio_output_policy.conf" ]; then
-  cp -af /system/vendor/etc/audio_output_policy.conf $MODPATH/system/vendor/etc/audio_output_policy.conf
-  sed -i '/deep_buffer {/,/}/d' $MODPATH/system/vendor/etc/audio_output_policy.conf
-  sed -i '/raw {/,/}/d' $MODPATH/system/vendor/etc/audio_output_policy.conf
-fi
-
-<<COMMENT_VENDOR_POLICY
-if [ -f "/vendor/etc/audio_policy.conf" ]; then
-  cp -af /vendor/etc/audio_policy.conf $MODPATH/vendor/etc/audio_policy.conf
-  sed -i '/deep_buffer {/,/}/d' $MODPATH/vendor/etc/audio_policy.conf
-  sed -i '/raw {/,/}/d' $MODPATH/vendor/etc/audio_policy.conf
-fi
-COMMENT_VENDOR_POLICY
 
 # build property database patch for MOD by resetprop, through a
 # property file called "custom_build.prop" or any other name
@@ -501,6 +471,7 @@ fi
 <<COMMENT_BUILD_PROP
 # build.prop patch for ViPER4Android Stock by replacing build.prop.
 # setprop in post-fs-data.sh may not work well on some devices.
+CACHEMODPATH=/cache/magisk_mount
 ui_print "- Setting props through build.prop"
 if ($CACHEMOD) && ($BUILDPROP); then
   BP=/system/build.prop
@@ -518,6 +489,15 @@ if ($CACHEMOD) && ($BUILDPROP); then
   done
 fi
 COMMENT_BUILD_PROP
+
+# Handle separate vendor partition replacement is
+# ONLY available on Magisk v10+. Below is no need anymore.
+# if [ -d "$MODPATH/vendor" ]; then
+#   cp -af $MODPATH/vendor /data/tmpvendor
+#   rm -rf $MODPATH/vendor
+#   cp -af /data/tmpvendor $MODPATH$SYS/vendor
+#   rm -rf /data/tmpvendor
+# fi
 
 # Handle replace folders
 for TARGET in $REPLACE; do

@@ -33,4 +33,6 @@ dolby.ds.virt.miracast=on
 dolby.ds.virt.usb=on
 dolby.ds.volumeleveler.state=off
 dolby.monospeaker=false
+ro.lenovo.soundeffect=dolby
+ro.mtk_dolby_dap_support=1
 #
