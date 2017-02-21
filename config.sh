@@ -135,6 +135,7 @@ install_package() {
       rm /data/$1
     else
       ui_print "- ${1%.apk} already exists on the device"
+      rm /data/$1
     fi
 
   else
@@ -176,8 +177,8 @@ set_permissions() {
     touch $MODPATH/bin_bind/enable
   fi
 
-  if [ -d "$MODPATH/system/xbin" ]; then
-    set_perm_recursive  $MODPATH/system/xbin  0  2000  0755  0755
+  if [ -d "$MODPATH$SYS/xbin" ]; then
+    set_perm_recursive  $MODPATH$SYS/xbin  0  2000  0755  0755
   fi
 
   if [ -f "$MODPATH$VEN" ]; then

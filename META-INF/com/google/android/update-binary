@@ -339,21 +339,23 @@ mkdir -p $MODPATH$SYS
 mkdir -p $MODPATH$VEN/etc
 
 # Handle removal files
-ui_print "- Removing existing files systemlessly"
-for TARGET in $REMOVAL; do
-  if [ -d "$TARGET" ]; then
-    mktouch $MODPATH$TARGET/.replace
-    ui_print "  removing folder $TARGET"
-  elif [ -f "$TARGET" ]; then
-    mktouch $MODPATH$TARGET
-    ui_print "  removing file $TARGET"
-  elif [ -L $TARGET ]; then
-    mktouch $MODPATH$TARGET
-    ui_print "  removing Symlink $TARGET"
-  else
-    :
-  fi
-done
+if [ -n "$REMOVAL" ]; then
+  ui_print "- Removing existing files systemlessly"
+  for TARGET in $REMOVAL; do
+    if [ -d "$TARGET" ]; then
+      mktouch $MODPATH$TARGET/.replace
+      ui_print "  removing folder $TARGET"
+    elif [ -f "$TARGET" ]; then
+      mktouch $MODPATH$TARGET
+      ui_print "  removing file $TARGET"
+    elif [ -L $TARGET ]; then
+      mktouch $MODPATH$TARGET
+      ui_print "  removing Symlink $TARGET"
+    else
+      :
+    fi
+  done
+fi
 
 # Copy files
 ui_print "- Copying files"
