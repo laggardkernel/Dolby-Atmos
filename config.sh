@@ -33,7 +33,7 @@
 
 # This will be the folder name under /magisk or /cache/magisk
 # This should also be the same as the id in your module.prop to prevent confusion
-MODID=template
+MODID=channelbonding
 
 # Set to true if you need automount
 # Most mods would like it to be enabled
@@ -46,12 +46,12 @@ POSTFSDATA=false
 LATESTARTSERVICE=false
 
 # Set to true if you need custom setprop script
-PROPFILE=true
+PROPFILE=false
 # personal file's name located anywhere on your internal storage
 buildname="custom_build.prop"
 tweakname="tweak.prop"
 
-VERSION="v1.0.0"
+VERSION="v1.0"
 REVISION="0.1"
 # APKNAME=*.apk
 # PACKAGENAME=*.*.*
@@ -67,7 +67,7 @@ REMOVAL="
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "     Magisk Module Template    "
+  ui_print "     Channel Bonding Enabler   "
   ui_print " "
   ui_print "             $VERSION"
   ui_print "*******************************"

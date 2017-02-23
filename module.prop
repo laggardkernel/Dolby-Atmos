@@ -1,9 +1,9 @@
-id=template
-name=Template Module
-version=v1
-versionCode=1
-author=topjohnwu
-description=A short description
-support=http://forum.xda-developers.com/showthread.php?t=3432382
+id=channelbonding
+name=Channel Bonding Enabler
+version=v1.0
+versionCode=10
+author=laggardkernel
+description=Enable Channel Bonding on devices with Qualcomm Modem. Enable 2.4GHz Channel Bonding only if your ROM support parameter gChannelBondingMode24GHz=1.
+support=https://github.com/laggardkernel/magisk-module-template/tree/channelbonding
 donate=http://topjohnwu.github.io/donate
 cacheModule=false
