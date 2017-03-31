@@ -48,7 +48,8 @@ LATESTARTSERVICE=false
 # Set to true if you need custom setprop script
 PROPFILE=true
 # personal file's name located anywhere on your internal storage
-buildname="custom_build.prop"
+# buildname="custom_build.prop"
+buildname="system.prop"
 tweakname="tweak.prop"
 
 VERSION="v1.0.0"
