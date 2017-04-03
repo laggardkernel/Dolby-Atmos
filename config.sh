@@ -57,8 +57,7 @@ REVISION="0.1"
 # APKNAME=*.apk
 # PACKAGENAME=*.*.*
 
-REMOVAL="
-"
+REMOVAL=
 
 ##########################################################################################
 # Installation Message
@@ -105,28 +104,28 @@ set_permissions() {
   # Default permissions, don't remove them
   set_perm_recursive  $MODPATH  0  0  0755  0644
 
-  # if [ -d "$MODPATH/system/bin" ]; then
-  #   set_perm_recursive  $MODPATH/system/bin  0  2000  0755  0755
-  # fi
+  if [ -d "$MODPATH$SYS/bin" ]; then
+    set_perm_recursive  $MODPATH/system/bin  0  2000  0755  0755
+  fi
 
   # bin_mount binaries to /system/bin is broken, do it manually
-  if [ -d "$MODPATH/system/bin" ]; then
-    ui_print "- Changing bin binaries mount method as manual"
-    mv -f "$MODPATH/system/bin" "$MODPATH/bin"
-    set_perm_recursive  $MODPATH/bin  0  2000  0755  0755
-    # Touch an empty "enable" file as switch
-    mkdir -p $MODPATH/bin_bind
-    touch $MODPATH/bin_bind/enable
-  fi
+  # if [ -d "$MODPATH/system/bin" ]; then
+  #   ui_print "- Changing bin binaries mount method as manual"
+  #   mv -f "$MODPATH/system/bin" "$MODPATH/bin"
+  #   set_perm_recursive  $MODPATH/bin  0  2000  0755  0755
+  #   # Touch an empty "enable" file as switch
+  #   mkdir -p $MODPATH/bin_bind
+  #   touch $MODPATH/bin_bind/enable
+  # fi
 
   if [ -d "$MODPATH$SYS/xbin" ]; then
     set_perm_recursive  $MODPATH$SYS/xbin  0  2000  0755  0755
   fi
 
-  if [ -f "$MODPATH$VEN" ]; then
-    set_separate_perm_recursive $MODPATH$VEN 0 2000 0 0 0755 0644
-    if [ -f "$MODPATH$VEN/bin" ]; then
-      set_perm_recursive $MODPATH$VEN/bin 0 2000 0755 0755
+  if [ -f "$MODPATH$SYS/vendor" ]; then
+    set_separate_perm_recursive $MODPATH$SYS/vendor 0 2000 0 0 0755 0644
+    if [ -f "$MODPATH$SYS/vendor/bin" ]; then
+      set_perm_recursive $MODPATH$SYS/vendor/bin 0 2000 0755 0755
     fi
   fi
 

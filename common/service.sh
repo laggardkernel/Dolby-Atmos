@@ -4,8 +4,15 @@
 MODDIR=${0%/*}
 LOGFILE=/cache/magisk.log
 MODNAME=${MODDIR#/magisk/}
-RESETPROP="/data/magisk/resetprop"
+MOUNTPOINT=/magisk
+COREDIR=$MOUNTPOINT/.core
 buildname="custom_build.prop"
+PROPLIST=`find $MODDIR -maxdepth 1 -type f ! -name "module.prop" ! -name "system.prop" -name "*.prop" 2>/dev/null`
+
+RESETPROP="/data/magisk/resetprop"
+if [ -f "$COREDIR/bin/resetprop" ]; then
+  RESETPROP="$COREDIR/bin/resetprop"
+fi
 
 log_print() {
   echo "$MODNAME: $1"
@@ -16,17 +23,19 @@ log_print() {
 # This script will be executed in late_start service mode
 # More info in the main Magisk thread
 
-if [ -f "$MODDIR/$buildname" ]; then
-  log_print "Setting props through $MODDIR/$buildname"
-  "$RESETPROP" --file "$MODDIR/$buildname"
-elif [ -f "/magisk/tweakprop/$buildname" ]; then
-  log_print "Setting props through /magisk/tweakprop/$buildname"
-  "$RESETPROP" --file "/magisk/tweakprop/$buildname"
-elif [ -e "/system/framework/SemcGenericUxpRes/SemcGenericUxpRes.apk" ]; then
-  # Set any prop (with trigger)
-  log_print "Setting props through servie.sh"
-  "$RESETPROP" * *
-  
+if [ ! -f "$MODDIR/system.prop" ]; then
+  if [ ! -z "$PROPLIST" ]; then
+    for ITEM in $PROPLIST; do
+      log_print "setting props through $ITEM"
+      "$RESETPROP" --file "$ITEM"
+    done
+  elif [ -f "/magisk/tweakprop/$buildname" ]; then
+    log_print "setting props through /magisk/tweakprop/$buildname"
+    "$RESETPROP" --file "/magisk/tweakprop/$buildname"
+  else
+    # Set any prop (with trigger)
+    log_print "setting props through servie.sh"
+    "$RESETPROP" * *
+  fi
+  log_print "Resetprop done. $(date +"%m-%d-%Y %H:%M:%S")"
 fi
-
-log_print "Resetprop done. $(date +"%m-%d-%Y %H:%M:%S")"
