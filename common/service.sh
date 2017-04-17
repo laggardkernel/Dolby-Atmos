@@ -7,7 +7,7 @@ MODNAME=${MODDIR#/magisk/}
 MOUNTPOINT=/magisk
 COREDIR=$MOUNTPOINT/.core
 buildname="custom_build.prop"
-PROPLIST=`find $MODDIR -maxdepth 1 -type f ! -name "module.prop" ! -name "system.prop" -name "*.prop" 2>/dev/null`
+PROPLIST=`find $MODDIR -maxdepth 1 -type f ! -name "module.prop" ! -name "system.prop" -name "*.prop" 2>/dev/null | sort -d`
 
 RESETPROP="/data/magisk/resetprop"
 if [ -f "$COREDIR/bin/resetprop" ]; then

@@ -20,7 +20,11 @@ fi
 
 # Use the included busybox for maximum compatibility and reliable results
 # e.g. we rely on the option "-c" for cp (reserve contexts), and -exec for find
-TOOLPATH=/data/busybox
+if [ -d "/dev/busybox" ]; then
+  TOOLPATH=/dev/busybox
+else
+  TOOLPATH=/data/busybox
+fi
 # BINPATH=/data/magisk
 
 log_print() {
