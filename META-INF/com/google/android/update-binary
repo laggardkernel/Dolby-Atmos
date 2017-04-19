@@ -128,46 +128,78 @@ set_separate_perm_recursive() {
 }
 
 install_package() {
-  # Install Android package $APKNAME $PACKAGENAME
+  # Install/update Android package $APKNAME $PACKAGENAME
   if [ -f "$MODPATH/system/app/${1%.apk}/$1" ]; then
-    ui_print "- Installing ${1%.apk} as system app systemlessly"
+    ui_print "! ${1%.apk} is installed as system app"
     rm -rf /data/app/${2}-*
-    rm -rf /data/data/${2}
+    # rm -rf /data/data/${2}
 
   elif [ -f "$MODPATH/system/priv-app/${1%.apk}/$1" ]; then
-    ui_print "- Installing ${1%.apk} as system priv-app systemlessly"
+    ui_print "! ${1%.apk} is installed as system priv-app"
     rm -rf /data/app/${2}-*
-    rm -rf /data/data/${2}
+    # rm -rf /data/data/${2}
 
   elif [ -f "$INSTALLER/common/$1" ]; then
-    if [ -z `ls /data/app | grep "$2"-` ]; then
-      ui_print "- Installing ${1%.apk} as data app"
-      APKPATH="$2"-1
-      for i in `ls /data/app | grep "$2"-`; do
-        if [ `cat /data/system/packages.xml | grep $i >/dev/null 2>&1; echo $?` -eq 0 ]; then
-          APKPATH=$i
-          break;
-        fi
-      done
-      rm -rf /data/app/"$2"-* 2>/dev/null
-      ui_print "  target path: /data/app/$APKPATH"
-      mkdir /data/app/$APKPATH
-      chown 1000.1000 /data/app/$APKPATH
-      chmod 0755 /data/app/$APKPATH
-      chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH
-      cp $INSTALLER/common/$1 /data/app/$APKPATH/base.apk
-      chown 1000.1000 /data/app/$APKPATH/base.apk
-      chmod 0644 /data/app/$APKPATH/base.apk
-      chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH/base.apk
-      rm /data/$1 2>/dev/null
-    else
-      ui_print "- ${1%.apk} already exists on the device"
-      rm /data/$1 2>/dev/null
+    ui_print "- Installing ${1%.apk} into /data"
+    APKPATH="$2"-1
+    for i in `ls /data/app | grep "$2"-`; do
+      if [ `cat /data/system/packages.xml | grep $i >/dev/null 2>&1; echo $?` -eq 0 ]; then
+        APKPATH=$i
+        break;
+      fi
+    done
+    rm -rf /data/app/"$2"-*
+
+    ui_print "  target path: /data/app/$APKPATH"
+
+    mkdir -p /data/app/$APKPATH
+    chown 1000.1000 /data/app/$APKPATH
+    chmod 0755 /data/app/$APKPATH
+    chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH
+
+    cp $INSTALLER/common/$1 /data/app/$APKPATH/base.apk
+    chown 1000.1000 /data/app/$APKPATH/base.apk
+    chmod 0644 /data/app/$APKPATH/base.apk
+    chcon u:object_r:apk_data_file:s0 /data/app/$APKPATH/base.apk
+
+    rm /data/$1 2>/dev/null
+
+    # enable xposed module
+    if [ ! -z "$3" -a "$3" == "xposed" ]; then
+      enable_xposed_package "$1" "$2" "/data/app/$APKPATH/base.apk"
     fi
 
   else
-    ui_print "- ${1%.apk} is not included, install it later by yourself"
+    ui_print "! ${1%.apk} is not included, install it later by yourself"
 
+  fi
+}
+
+enable_xposed_package(){
+  # $1, apk name
+  # $2, full package location in /data/app/*.*.*/base.apk
+  if [ ! -d "/data/data/de.robv.android.xposed.installer" ]; then
+    ui_print "  Remember to enable ${1%.apk} in Xposed Installer later"
+  else
+    XPOSEDMODULES="/data/data/de.robv.android.xposed.installer/conf/modules.list"
+    XPOSEDENABLED="/data/data/de.robv.android.xposed.installer/conf/enabled_modules.list"
+    XPOSEDENABLEDXML="/data/data/de.robv.android.xposed.installer/shared_prefs/enabled_modules.xml"
+
+    if [ `cat $XPOSEDENABLED | grep "$2" >/dev/null 2>&1; echo $?` -ne 0 ]; then
+      ui_print "  Enabling Xposed module ${1%.apk}"
+      echo "$2" >> $XPOSEDENABLED
+      if [ `cat $XPOSEDENABLEDXML | grep "$2" >/dev/null 2>&1; echo $?` -ne 0 ]; then
+        if [ `cat $XPOSEDENABLEDXML | grep "<map>" >/dev/null 2>&1; echo $?` -eq 0 ]; then
+          sed -i "/<\/map>/ i \    <int name=\"${2}\" value=\"1\" \/>" $XPOSEDENABLEDXML
+        else
+          sed -i "s/<map \/>/<map>\n\    <int name=\"${2}\" value=\"1\" \/>\n<\/map>/" $XPOSEDENABLEDXML
+        fi
+      fi
+    fi
+
+    if [ `cat $XPOSEDMODULES | grep "$3" >/dev/null 2>&1; echo $?` -ne 0 ]; then
+      echo "$3" >> $XPOSEDMODULES
+    fi
   fi
 }
 
