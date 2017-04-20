@@ -259,35 +259,6 @@ source config.sh
 INSTALLER=$TMPDIR/$MODID
 MODPATH=$MOUNTPATH/$MODID
 
-rm -rf $INSTALLER
-mkdir -p $INSTALLER
-cd $INSTALLER
-# unzip -o "$ZIP" common/* module.prop
-unzip -o "$ZIP"
-
-##########################################################################################
-# Main
-##########################################################################################
-
-# Print mod name
-print_modname
-
-# Please leave this message in your flashable zip for credits :)
-ui_print "******************************"
-ui_print "Powered by Magisk (@topjohnwu)"
-ui_print "******************************"
-
-ui_print "- Mounting /system(ro), /vendor(ro), /data, /cache"
-mount -o ro /system 2>/dev/null
-mount -o ro /vendor 2>/dev/null
-mount /data 2>/dev/null
-mount /cache 2>/dev/null
-
-if [ ! -f '/system/build.prop' ]; then
-  ui_print "! Failed: /system could not be mounted!"
-  exit 1
-fi
-
 # FILE LOCATIONS
 
 if [ -d "/system/system" ]; then
@@ -322,6 +293,13 @@ else
   SDCARD=/sdcard
 fi
 
+MIRRDIR=""
+if $BOOTMODE; then
+  MIRRDIR="/dev/magisk/mirror"
+fi
+
+MIRRSYS="$MIRRDIR$SYS"
+
 CONFIG_FILE=$SYS/etc/audio_effects.conf
 #OFFLOAD_CONFIG=$SYS/etc/audio_effects_offload.conf
 OFFLOAD_CONFIG=/system/etc/audio_offload_effects.conf
@@ -333,6 +311,36 @@ AUD_POL=$SYS/etc/audio_policy.conf
 AUD_POL_CONF=$SYS/etc/audio_policy_configuration.xml
 AUD_OUT_POL=$VEN/etc/audio_output_policy.conf
 V_AUD_POL=$VEN/etc/audio_policy.conf
+
+# unzip files into temperary folder $INSTALLER
+rm -rf $INSTALLER
+mkdir -p $INSTALLER
+cd $INSTALLER
+# unzip -o "$ZIP" common/* module.prop
+unzip -o "$ZIP"
+
+##########################################################################################
+# Main
+##########################################################################################
+
+# Print mod name
+print_modname
+
+# Please leave this message in your flashable zip for credits :)
+ui_print "******************************"
+ui_print "Powered by Magisk (@topjohnwu)"
+ui_print "******************************"
+
+ui_print "- Mounting /system(ro), /vendor(ro), /data, /cache"
+mount -o ro /system 2>/dev/null
+mount -o ro /vendor 2>/dev/null
+mount /data 2>/dev/null
+mount /cache 2>/dev/null
+
+if [ ! -f '/system/build.prop' ]; then
+  ui_print "! Failed: /system could not be mounted!"
+  exit 1
+fi
 
 API=`grep_prop ro.build.version.sdk`
 ABI=`grep_prop ro.product.cpu.abi | cut -c-3`
@@ -428,19 +436,19 @@ rm -rf $MODPATH
 mkdir -p $MODPATH$SYS
 mkdir -p $MODPATH$SYS/vendor/etc
 
-# Handle removal files
-if [ -n "$REMOVAL" ]; then
+# Handle removal files after test
+if [ -n "$TESTREMOVAL" ]; then
   ui_print "- Removing existing files systemlessly"
-  for TARGET in $REMOVAL; do
-    if [ -d "$TARGET" ]; then
-      mktouch $MODPATH$TARGET/.replace
+  for TARGET in $TESTREMOVAL; do
+    if [ -d "$MIRRDIR$TARGET" ]; then
+      mktouch "$MODPATH$TARGET/.replace"
       ui_print "  removing folder $TARGET"
-    elif [ -f "$TARGET" ]; then
-      mktouch $MODPATH$TARGET
+    elif [ -f "$MIRRDIR$TARGET" ]; then
+      mktouch "$MODPATH$TARGET"
       ui_print "  removing file $TARGET"
-    elif [ -L $TARGET ]; then
-      mktouch $MODPATH$TARGET
-      ui_print "  removing Symlink $TARGET"
+    elif [ -L "$MIRRDIR$TARGET" ]; then
+      mktouch "$MODPATH$TARGET"
+      ui_print "  removing symlink $TARGET"
     else
       :
     fi
