@@ -91,7 +91,7 @@ REPLACE="
 # Construct your own list here
 REPLACE="
 "
-# Removal list for test of its existance
+# Removal list from theme ready
 TESTREMOVAL="
 /system/app/GoogleLatinIME
 /system/priv-app/GoogleLatinIme
@@ -142,6 +142,7 @@ TESTREMOVAL="
 /system/app/GooglePhotos
 /system/app/Photos
 /system/app/youtube
+/system/app/Youtube
 /system/app/YouTube
 "
 

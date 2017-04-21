@@ -422,8 +422,8 @@ if ! is_mounted $MOUNTPATH; then
   exit 1
 fi
 
-# Create mod paths
-ui_print "- Cleaning conflicting apps in /data"
+# Cleaning conflicts in /data
+ui_print "- Cleaning conflicts in /data"
 # rm -rf /data/app/com.atmos-*
 # rm -rf /data/data/com.atmos
 # rm -rf /data/app/com.atmos.daxappUI-*
@@ -436,19 +436,35 @@ rm -rf $MODPATH
 mkdir -p $MODPATH$SYS
 mkdir -p $MODPATH$SYS/vendor/etc
 
+# Cleaning conflicts in /magisk
+if [ -n "$TESTREMOVAL" ]; then
+  ui_print "- Cleaning conflicts in /magisk"
+  for TARGET in $TESTREMOVAL; do
+    for FILETYPE in d f l; do
+      RESULT=$(find /magisk/* -name "${TARGET##/*/}" -type "$FILETYPE" 2>/dev/null | grep "$TARGET")
+      if [ ! -z "$RESULT" ]; then
+        for ITEM in $RESULT; do
+          ui_print "  $ITEM"
+          rm -rf "$ITEM"
+        done
+      fi
+    done
+  done
+fi
+
 # Handle removal files after test
 if [ -n "$TESTREMOVAL" ]; then
   ui_print "- Removing existing files systemlessly"
   for TARGET in $TESTREMOVAL; do
     if [ -d "$MIRRDIR$TARGET" ]; then
+      ui_print "  $TARGET"
       mktouch "$MODPATH$TARGET/.replace"
-      ui_print "  removing folder $TARGET"
     elif [ -f "$MIRRDIR$TARGET" ]; then
+      ui_print "  $TARGET"
       mktouch "$MODPATH$TARGET"
-      ui_print "  removing file $TARGET"
     elif [ -L "$MIRRDIR$TARGET" ]; then
+      ui_print "  $TARGET"
       mktouch "$MODPATH$TARGET"
-      ui_print "  removing symlink $TARGET"
     else
       :
     fi
